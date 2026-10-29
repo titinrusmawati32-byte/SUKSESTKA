@@ -5,12 +5,12 @@
   <title>Latihan Soal SD - Guru Pintar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
-  <!-- Google Fonts: Comic Neue untuk font ceria & ramah anak SD -->
+  <!-- Google Fonts: Plus Jakarta Sans untuk desain Claymorphism Modern & Comic Neue untuk ramah anak -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
   
-  <!-- CSS Utama (Path Relatif Kompatibel dengan GitHub Pages) -->
+  <!-- CSS Utama (Path Relatif Kompatibel dengan Vercel & GitHub Pages) -->
   <link rel="stylesheet" href="./assets/css/style.css">
 </head>
 <body>
@@ -61,60 +61,63 @@
        PORTAL GURU (DASHBOARD, KELAS, BANK SOAL, PAKET, TOKEN, HASIL)
        ======================================================================== -->
   <div id="teacher-container" class="teacher-wrapper hidden">
-    <!-- Sidebar Guru -->
+    <!-- Sidebar Guru (Dock Kiri Elegan seperti Referensi) -->
     <aside class="teacher-sidebar" id="teacherSidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">
-          <span>🎒</span>
-          <span>Guru Pintar</span>
+          <div class="logo-icon-wrap">🎒</div>
+          <div>
+            <div class="logo-title">Guru Pintar</div>
+            <div class="logo-subtitle">LMS Soal SD</div>
+          </div>
         </div>
       </div>
       <ul class="sidebar-menu">
         <li class="sidebar-item active" data-view="dashboard">
           <a href="javascript:void(0)" onclick="app.switchTeacherView('dashboard')">
-            <span>📊</span>
-            <span>Dashboard</span>
+            <span class="sidebar-icon">📊</span>
+            <span class="sidebar-label">Dashboard</span>
           </a>
         </li>
         <li class="sidebar-item" data-view="kelas">
           <a href="javascript:void(0)" onclick="app.switchTeacherView('kelas')">
-            <span>🏫</span>
-            <span>Kelas & Siswa</span>
+            <span class="sidebar-icon">🏫</span>
+            <span class="sidebar-label">Kelas & Siswa</span>
           </a>
         </li>
         <li class="sidebar-item" data-view="banksoal">
           <a href="javascript:void(0)" onclick="app.switchTeacherView('banksoal')">
-            <span>📚</span>
-            <span>Bank Soal</span>
+            <span class="sidebar-icon">📚</span>
+            <span class="sidebar-label">Bank Soal</span>
           </a>
         </li>
         <li class="sidebar-item" data-view="paket">
           <a href="javascript:void(0)" onclick="app.switchTeacherView('paket')">
-            <span>📝</span>
-            <span>Paket Latihan</span>
+            <span class="sidebar-icon">📝</span>
+            <span class="sidebar-label">Paket Latihan</span>
           </a>
         </li>
         <li class="sidebar-item" data-view="token">
           <a href="javascript:void(0)" onclick="app.switchTeacherView('token')">
-            <span>🔑</span>
-            <span>Token Siswa</span>
+            <span class="sidebar-icon">🔑</span>
+            <span class="sidebar-label">Token Siswa</span>
           </a>
         </li>
         <li class="sidebar-item" data-view="hasil">
           <a href="javascript:void(0)" onclick="app.switchTeacherView('hasil')">
-            <span>📈</span>
-            <span>Hasil & Rekap</span>
+            <span class="sidebar-icon">📈</span>
+            <span class="sidebar-label">Hasil & Rekap</span>
           </a>
         </li>
         <li class="sidebar-item" data-view="pengaturan">
           <a href="javascript:void(0)" onclick="app.switchTeacherView('pengaturan')">
-            <span>⚙️</span>
-            <span>Pengaturan</span>
+            <span class="sidebar-icon">⚙️</span>
+            <span class="sidebar-label">Pengaturan</span>
           </a>
         </li>
       </ul>
       <div class="sidebar-footer">
-        <button class="btn btn-secondary btn-sm" style="width:100%" onclick="auth.logout()">
+        <button class="btn-logout-pill" onclick="auth.logout()">
           <span>🚪</span> Keluar Akun
         </button>
       </div>
@@ -123,78 +126,249 @@
     <!-- Konten Utama Guru -->
     <main class="teacher-main">
       <header class="teacher-header">
-        <div class="flex items-center gap-3">
+        <div class="header-left">
           <button class="mobile-menu-btn" onclick="app.toggleSidebar()">☰</button>
-          <h2 id="teacherPageTitle" style="font-size: 18px; font-weight: 700;">Dashboard</h2>
+          <div>
+            <h1 class="header-greeting">
+              Selamat Datang, <span id="teacherGreeting">Bpk/Ibu Guru</span> 👋
+            </h1>
+            <div class="header-subtitle-wrap">
+              <span id="teacherPageTitle" class="header-subtitle">Dashboard Utama</span>
+              <span class="header-subtitle-arrow">⌄</span>
+            </div>
+          </div>
         </div>
-        <div class="flex items-center gap-3">
-          <span class="badge badge-primary">Guru</span>
-          <span id="teacherGreeting" style="font-weight: 600; font-size: 14px;">Bpk/Ibu Guru</span>
+
+        <div class="header-right">
+          <div class="top-search-pill">
+            <span>🔍</span>
+            <input type="text" placeholder="Cari di sini..." />
+          </div>
+          <button class="top-icon-btn" title="Bantuan" onclick="app.showToast('Pilih menu di sidebar untuk mengelola latihan soal siswa.', 'info')">
+            <span>❓</span>
+          </button>
+          <div class="top-profile-pill">
+            <div class="profile-avatar">
+              <span>👨‍🏫</span>
+              <span class="online-status-dot"></span>
+            </div>
+            <span class="profile-role">Guru</span>
+          </div>
         </div>
       </header>
 
       <div class="teacher-content">
-        <!-- 1. DASHBOARD VIEW -->
+        <!-- 1. DASHBOARD VIEW (Persis Struktur Referensi Desain) -->
         <div id="view-dashboard" class="t-view">
-          <div class="stat-grid">
-            <div class="stat-card">
-              <div class="stat-icon" style="background:#eff6ff; color:#2563eb;">🏫</div>
-              <div>
-                <div class="stat-val" id="dashTotalKelas">0</div>
-                <div class="stat-lbl">Total Kelas</div>
+
+          <!-- Section 1: Bills / Ringkasan Kartu Utama dengan Tab Aksen -->
+          <div class="section-header">
+            <div class="section-title-wrap">
+              <h2 class="section-title">Ringkasan Utama</h2>
+              <span class="section-subtitle">Statistik pembelajaran dan bank soal aktif</span>
+            </div>
+            <span class="section-toggle">⌄</span>
+          </div>
+
+          <div class="stat-grid-ref">
+            <!-- Card 1: Total Kelas -->
+            <div class="clay-stat-card card-accent-blue">
+              <div class="stat-card-top">
+                <div class="stat-card-icon-pill icon-blue">🏫</div>
+                <div class="stat-card-badge badge-pill-blue">+100% Siap</div>
+              </div>
+              <div class="stat-card-middle">
+                <span class="stat-sublabel">Total Kelas</span>
+                <div class="stat-main-number" id="dashTotalKelas">0</div>
+              </div>
+              <div class="stat-card-footer">
+                <span class="text-muted-xs">Kelas aktif terdaftar</span>
+              </div>
+              <div class="card-edge-tab tab-blue"></div>
+            </div>
+
+            <!-- Card 2: Paket Aktif -->
+            <div class="clay-stat-card card-accent-cyan">
+              <div class="stat-card-top">
+                <div class="stat-card-icon-pill icon-cyan">📝</div>
+                <div class="stat-card-badge badge-pill-cyan">Terbit</div>
+              </div>
+              <div class="stat-card-middle">
+                <span class="stat-sublabel">Paket Aktif</span>
+                <div class="stat-main-number" id="dashPaketAktif">0</div>
+              </div>
+              <div class="stat-card-footer">
+                <span class="text-muted-xs">Siap dikerjakan siswa</span>
+              </div>
+              <div class="card-edge-tab tab-cyan"></div>
+            </div>
+
+            <!-- Card 3: Soal di Bank -->
+            <div class="clay-stat-card card-accent-amber">
+              <div class="stat-card-top">
+                <div class="stat-card-icon-pill icon-amber">📚</div>
+                <div class="stat-card-badge badge-pill-amber">Tersedia</div>
+              </div>
+              <div class="stat-card-middle">
+                <span class="stat-sublabel">Soal di Bank</span>
+                <div class="stat-main-number" id="dashTotalSoal">0</div>
+              </div>
+              <div class="stat-card-footer">
+                <span class="text-muted-xs">Koleksi bank soal</span>
+              </div>
+              <div class="card-edge-tab tab-amber"></div>
+            </div>
+
+            <!-- Card 4: Siswa Mengerjakan -->
+            <div class="clay-stat-card card-accent-green">
+              <div class="stat-card-top">
+                <div class="stat-card-icon-pill icon-green">🎯</div>
+                <div class="stat-card-badge badge-pill-green">Aktif</div>
+              </div>
+              <div class="stat-card-middle">
+                <span class="stat-sublabel">Siswa Mengerjakan</span>
+                <div class="stat-main-number" id="dashTotalPengerjaan">0</div>
+              </div>
+              <div class="stat-card-footer">
+                <span class="text-muted-xs">Total sesi pengerjaan</span>
+              </div>
+              <div class="card-edge-tab tab-green"></div>
+            </div>
+          </div>
+
+          <!-- Section 2: Invoices / Hero Purple Card + Aksi Cepat + Bar Chart -->
+          <div class="section-header" style="margin-top: 24px;">
+            <div class="section-title-wrap">
+              <h2 class="section-title">Performa & Evaluasi</h2>
+              <span class="section-subtitle">Tingkat capaian nilai dan tindakan cepat</span>
+            </div>
+            <span class="section-toggle">⌄</span>
+          </div>
+
+          <div class="dashboard-hero-row">
+            <!-- HERO PURPLE CARD DENGAN SPEEDOMETER GAUGE -->
+            <div class="hero-purple-card">
+              <div class="hero-card-header">
+                <span class="hero-badge">Rata-rata Nilai</span>
+                <button class="hero-menu-dots">⋮</button>
+              </div>
+
+              <div class="hero-gauge-wrap">
+                <svg class="hero-gauge-svg" viewBox="0 0 160 90">
+                  <path d="M 20 80 A 60 60 0 0 1 140 80" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="14" stroke-linecap="round"/>
+                  <path d="M 20 80 A 60 60 0 0 1 125 45" fill="none" stroke="url(#heroGaugeGrad)" stroke-width="14" stroke-linecap="round"/>
+                  <defs>
+                    <linearGradient id="heroGaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="#38ef7d"/>
+                      <stop offset="50%" stop-color="#11998e"/>
+                      <stop offset="100%" stop-color="#ffffff"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div class="hero-gauge-value">
+                  <span id="dashRataRata">0</span>
+                  <span class="hero-gauge-unit">Rata-Rata</span>
+                </div>
+              </div>
+
+              <div class="hero-card-body">
+                <div class="hero-stat-label">Capaian Skor Siswa</div>
+                <div class="hero-stat-desc">Akumulasi hasil seluruh paket latihan</div>
               </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-icon" style="background:#fef3c7; color:#d97706;">📝</div>
-              <div>
-                <div class="stat-val" id="dashPaketAktif">0</div>
-                <div class="stat-lbl">Paket Aktif</div>
+
+            <!-- KARTU AKSI CEPAT & STATUS -->
+            <div class="hero-side-cards">
+              <div class="clay-stat-card quick-action-clay-card">
+                <div class="flex items-center justify-between" style="margin-bottom: 12px;">
+                  <div class="flex items-center gap-2">
+                    <span style="font-size: 18px;">⚡</span>
+                    <span style="font-weight: 800; font-size: 14px;">Aksi Cepat</span>
+                  </div>
+                  <span class="stat-card-badge badge-pill-cyan">Guru</span>
+                </div>
+                <div class="flex flex-col gap-2">
+                  <button class="btn btn-primary btn-pill-action" onclick="bankSoal.openModal()">
+                    <span>➕</span> Buat Soal Baru
+                  </button>
+                  <button class="btn btn-success btn-pill-action" onclick="paketLatihan.openModal()">
+                    <span>📝</span> Buat Paket Latihan
+                  </button>
+                  <button class="btn btn-secondary btn-pill-action" onclick="kelas.openModal()">
+                    <span>🏫</span> Tambah Kelas Baru
+                  </button>
+                </div>
+              </div>
+
+              <div class="clay-stat-card status-mini-card">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span style="font-size: 20px;">🔑</span>
+                    <div>
+                      <div style="font-weight: 700; font-size: 13px;">Token Akses Siswa</div>
+                      <div class="text-muted-xs">Siap dibagikan ke kelas</div>
+                    </div>
+                  </div>
+                  <button class="btn btn-primary btn-sm" onclick="app.switchTeacherView('token')">Kelola</button>
+                </div>
               </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-icon" style="background:#d1fae5; color:#059669;">📚</div>
-              <div>
-                <div class="stat-val" id="dashTotalSoal">0</div>
-                <div class="stat-lbl">Soal di Bank</div>
+
+            <!-- KARTU BAR CHART AKTIVITAS (Seperti di Referensi) -->
+            <div class="clay-stat-card chart-clay-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-month-pill">Aktivitas Latihan</div>
+                  <span class="text-muted-xs">Tren pengerjaan siswa 7 hari terakhir</span>
+                </div>
+                <button class="hero-menu-dots text-muted">⋮</button>
               </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon" style="background:#f3e8ff; color:#7e22ce;">🎯</div>
-              <div>
-                <div class="stat-val" id="dashTotalPengerjaan">0</div>
-                <div class="stat-lbl">Siswa Mengerjakan</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon" style="background:#fee2e2; color:#dc2626;">⭐</div>
-              <div>
-                <div class="stat-val" id="dashRataRata">0</div>
-                <div class="stat-lbl">Rata-rata Nilai</div>
+
+              <div class="chart-bars-wrap">
+                <div class="chart-bar-col">
+                  <div class="chart-bar-fill" style="height: 45%;"></div>
+                  <span class="chart-bar-lbl">Sen</span>
+                </div>
+                <div class="chart-bar-col">
+                  <div class="chart-bar-fill" style="height: 70%;"></div>
+                  <span class="chart-bar-lbl">Sel</span>
+                </div>
+                <div class="chart-bar-col">
+                  <div class="chart-bar-fill" style="height: 55%;"></div>
+                  <span class="chart-bar-lbl">Rab</span>
+                </div>
+                <div class="chart-bar-col">
+                  <div class="chart-bar-fill active" style="height: 95%;"></div>
+                  <span class="chart-bar-lbl font-bold text-primary">Kam</span>
+                </div>
+                <div class="chart-bar-col">
+                  <div class="chart-bar-fill" style="height: 80%;"></div>
+                  <span class="chart-bar-lbl">Jum</span>
+                </div>
+                <div class="chart-bar-col">
+                  <div class="chart-bar-fill" style="height: 60%;"></div>
+                  <span class="chart-bar-lbl">Sab</span>
+                </div>
+                <div class="chart-bar-col">
+                  <div class="chart-bar-fill" style="height: 35%;"></div>
+                  <span class="chart-bar-lbl">Min</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="card">
-            <div class="flex items-center justify-between" style="margin-bottom: 16px;">
-              <h3 style="font-size: 16px; font-weight: 700;">Aksi Cepat</h3>
+          <!-- Section 3: History / Aktivitas Siswa Terbaru -->
+          <div class="section-header" style="margin-top: 24px;">
+            <div class="section-title-wrap">
+              <h2 class="section-title">Aktivitas Siswa Terbaru</h2>
+              <span class="section-subtitle">Riwayat pengerjaan latihan yang baru dikumpulkan</span>
             </div>
-            <div class="flex flex-wrap gap-3">
-              <button class="btn btn-primary" onclick="bankSoal.openModal()">
-                <span>➕</span> Buat Soal Baru
-              </button>
-              <button class="btn btn-success" onclick="paketLatihan.openModal()">
-                <span>📝</span> Buat Paket Latihan
-              </button>
-              <button class="btn btn-secondary" onclick="kelas.openModal()">
-                <span>🏫</span> Tambah Kelas Baru
-              </button>
-            </div>
+            <span class="section-toggle">⌄</span>
           </div>
 
-          <div class="card">
-            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Aktivitas Siswa Terbaru</h3>
+          <div class="clay-stat-card history-card">
             <div class="table-responsive">
-              <table class="data-table">
+              <table class="data-table ref-table">
                 <thead>
                   <tr>
                     <th>Nama Siswa</th>
@@ -448,12 +622,6 @@
             </div>
             <button class="btn btn-primary" onclick="app.handlePasswordChangeSubmit()">Simpan Password Baru</button>
           </div>
-            <div class="form-group">
-              <label class="form-label">Ulangi Password Baru</label>
-              <input type="password" id="setConfirmPass" class="form-control" placeholder="Ulangi password baru">
-            </div>
-            <button class="btn btn-primary" onclick="app.handlePasswordChangeSubmit()">Simpan Password Baru</button>
-          </div>
 
           <div class="card" style="max-width: 650px; margin-top: 20px;">
             <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Integritas Database Google Sheets</h3>
@@ -471,37 +639,39 @@
        PORTAL SISWA (MASUK TOKEN, PENGERJAAN, HASIL, PEMBAHASAN)
        ======================================================================== -->
   <div id="student-container" class="student-wrapper">
-    <!-- 1. SCREEN TOKEN & LOGIN GURU TOGGLE -->
+    <!-- 1. SCREEN TOKEN SISWA (LANDING UTAMA) -->
     <div id="student-token-screen">
-      <div class="flex justify-between items-center" style="margin-bottom: 24px;">
-        <div class="flex items-center gap-2">
-          <span style="font-size: 28px;">🌟</span>
-          <span style="font-weight: 800; font-size: 20px; color: var(--primary);">Latihan Soal SD</span>
+      <div class="student-landing-nav">
+        <div class="flex items-center gap-3">
+          <div class="logo-icon-wrap" style="width: 44px; height: 44px; font-size: 22px;">🌟</div>
+          <div>
+            <h1 style="font-size: 20px; font-weight: 800; color: var(--text-main);">Latihan Soal SD</h1>
+            <span class="text-muted-xs">Portal Belajar Siswa Pintar</span>
+          </div>
         </div>
-        <div class="flex gap-2">
-          <button class="btn btn-secondary btn-sm" onclick="app.openApiConfigModal()" title="Konfigurasi URL API">
-            <span>⚙️</span>
-          </button>
-          <button class="btn btn-secondary btn-sm" onclick="app.openTeacherLoginModal()">
+        <div>
+          <button class="btn btn-secondary btn-pill-teacher" onclick="app.openTeacherLoginModal()">
             <span>👨‍🏫</span> Masuk sebagai Guru
           </button>
         </div>
       </div>
 
-      <div class="card text-center" style="padding: 40px 24px;">
-        <div style="font-size: 64px; margin-bottom: 16px;">✏️</div>
-        <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 8px; color: var(--text-main);">Halo, Siswa Hebat!</h2>
-        <p class="text-muted" style="font-size: 16px; margin-bottom: 28px;">
+      <div class="student-landing-card">
+        <div class="student-illustration-wrap">
+          <div class="clay-illustration-circle">✏️</div>
+        </div>
+        <h2 class="student-welcome-title">Halo, Siswa Hebat!</h2>
+        <p class="student-welcome-subtitle">
           Masukkan kode token latihan yang diberikan oleh bapak/ibu guru untuk mulai belajar:
         </p>
 
-        <div style="max-width: 380px; margin: 0 auto;">
-          <input type="text" id="inputStudentToken" class="form-control text-center"
+        <div class="token-input-box">
+          <input type="text" id="inputStudentToken" class="student-token-pill-input"
                  placeholder="KODE TOKEN"
-                 style="font-size: 24px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; padding: 16px; margin-bottom: 16px; border: 3px solid var(--border-focus);"
-                 maxlength="20">
-          <button class="btn btn-primary btn-lg" style="width: 100%;" onclick="tokenSiswa.validateInputToken()">
-            <span>🚀</span> Mulai Latihan
+                 maxlength="20"
+                 onkeyup="if(event.key==='Enter') tokenSiswa.validateInputToken()">
+          <button class="btn btn-primary btn-pill-cta" onclick="tokenSiswa.validateInputToken()">
+            <span>🚀 Mulai Latihan</span>
           </button>
         </div>
       </div>
@@ -1168,7 +1338,7 @@
     </div>
   </div>
 
-  <!-- Scripts JavaScript (Path Relatif Kompatibel dengan GitHub Pages) -->
+  <!-- Scripts JavaScript (Path Relatif Kompatibel dengan Vercel & GitHub Pages) -->
   <script src="./assets/js/config.js"></script>
   <script src="./assets/js/api.js"></script>
   <script src="./assets/js/auth.js"></script>
