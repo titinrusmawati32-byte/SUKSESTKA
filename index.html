@@ -624,11 +624,16 @@
           </div>
 
           <div class="card" style="max-width: 650px; margin-top: 20px;">
-            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Integritas Database Google Sheets</h3>
-            <p class="text-muted" style="font-size: 13px; margin-bottom: 12px;">Verifikasi bahwa 10 sheet database dan folder Google Drive Media siap digunakan.</p>
-            <button class="btn btn-secondary" onclick="app.runDatabaseSetupVerification()">
-              <span>🔄</span> Jalankan Verifikasi Database
-            </button>
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Integritas Database Google Sheets & Media Drive</h3>
+            <p class="text-muted" style="font-size: 13px; margin-bottom: 12px;">Verifikasi bahwa 10 sheet database, folder Google Drive Media, dan URL gambar soal siap digunakan.</p>
+            <div class="flex gap-2 flex-wrap">
+              <button class="btn btn-secondary" onclick="app.runDatabaseSetupVerification()">
+                <span>🔄</span> Jalankan Verifikasi Database
+              </button>
+              <button class="btn btn-secondary" onclick="app.fixDriveImages()">
+                <span>🖼️</span> Perbaiki Izin & URL Gambar Drive
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -748,7 +753,7 @@
         </div>
 
         <div class="question-text" id="qQuestionText">Pertanyaan soal akan muncul di sini...</div>
-        <img id="qQuestionImage" class="question-image hidden" src="" alt="Gambar Soal">
+        <img id="qQuestionImage" class="question-image hidden" src="" alt="Gambar Soal" referrerpolicy="no-referrer">
 
         <div id="qAreaPilihanGanda" class="options-grid"></div>
 

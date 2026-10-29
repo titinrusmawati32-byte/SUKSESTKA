@@ -164,6 +164,9 @@ function handleApiAction(action, sessionToken, data) {
     case 'archiveSoal':
       return archiveSoal(sessionToken, data.soalId);
 
+    case 'fixImagePermissions':
+      return fixImagePermissions(sessionToken);
+
     // --- PAKET LATIHAN ---
     case 'getPaketLatihan':
       return getPaketLatihan(sessionToken);

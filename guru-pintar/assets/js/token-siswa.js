@@ -343,7 +343,23 @@ const tokenSiswa = (function() {
 
     const imgEl = document.getElementById('qQuestionImage');
     if (q.gambarUrl) {
-      imgEl.src = q.gambarUrl;
+      imgEl.referrerPolicy = 'no-referrer';
+      const cleanUrl = app.formatDriveImageUrl(q.gambarUrl);
+      imgEl.dataset.fallbackStage = '0';
+      imgEl.src = cleanUrl;
+      imgEl.onerror = function() {
+        const stage = parseInt(this.dataset.fallbackStage || '0', 10);
+        const fId = app.getDriveFileId(q.gambarUrl) || app.getDriveFileId(this.src);
+        if (fId) {
+          if (stage === 0) {
+            this.dataset.fallbackStage = '1';
+            this.src = `https://drive.google.com/thumbnail?id=${fId}&sz=w1000`;
+          } else if (stage === 1) {
+            this.dataset.fallbackStage = '2';
+            this.src = `https://lh3.google.com/u/0/d/${fId}`;
+          }
+        }
+      };
       imgEl.classList.remove('hidden');
     } else {
       imgEl.classList.add('hidden');
@@ -567,7 +583,7 @@ const tokenSiswa = (function() {
               <span class="badge ${isBenar ? 'badge-success' : 'badge-danger'}">${isBenar ? 'BENAR' : 'SALAH'}</span>
             </div>
             <div class="question-text" style="font-size:16px; margin-bottom:12px;">${app.escapeHtml(item.pertanyaan)}</div>
-            ${item.gambarUrl ? `<img src="${app.escapeHtml(item.gambarUrl)}" class="question-image" style="max-height:200px;">` : ''}
+            ${item.gambarUrl ? `<img src="${app.escapeHtml(app.formatDriveImageUrl(item.gambarUrl))}" class="question-image" style="max-height:220px;" referrerpolicy="no-referrer" onerror="const f='${app.getDriveFileId(item.gambarUrl)}'; if(f && !this.dataset.t){this.dataset.t='1'; this.src='https://drive.google.com/thumbnail?id='+f+'&sz=w1000';}">` : ''}
             <div style="font-size:14px; margin-bottom:6px;">
               Jawaban Kamu: <b style="color:${isBenar ? 'var(--secondary)' : 'var(--accent-red)'};">${app.escapeHtml(item.jawabanSiswa || '(Tidak Dijawab)')}</b>
             </div>

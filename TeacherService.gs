@@ -271,6 +271,10 @@ function getBankSoal(sessionToken, filters) {
     return new Date(b.DiperbaruiPada || b.DibuatPada) - new Date(a.DiperbaruiPada || a.DibuatPada);
   });
 
+  for (var k = 0; k < list.length; k++) {
+    list[k].GambarURL = normalizeDriveImageUrl(list[k].GambarURL, list[k].GambarFileID);
+  }
+
   return { success: true, data: list };
 }
 
@@ -298,18 +302,23 @@ function uploadImageToDrive(base64Data, fileName) {
   var decodedBytes = Utilities.base64Decode(cleanBase64);
   var blob = Utilities.newBlob(decodedBytes, mimeType, fileName || ('soal_' + Date.now() + '.png'));
   var file = folder.createFile(blob);
+  var fileId = file.getId();
 
   try {
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   } catch (e) {
-    // Abaikan jika restricted oleh domain admin
+    try {
+      file.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
+    } catch (e2) {
+      Logger.log('Set sharing warning: ' + e2);
+    }
   }
 
-  // Gunakan Google Drive thumbnail / uc link untuk embedding di web
-  var directUrl = 'https://drive.google.com/uc?export=view&id=' + file.getId();
+  // Gunakan Google usercontent CDN direct link untuk embedding web tanpa blokir CORS
+  var directUrl = 'https://lh3.googleusercontent.com/d/' + fileId;
 
   return {
-    fileId: file.getId(),
+    fileId: fileId,
     fileUrl: directUrl
   };
 }
@@ -498,6 +507,7 @@ function getPaketDetail(sessionToken, paketId) {
         urutan: ps.Urutan,
         bobot: ps.BobotOverride || s.Bobot,
         pertanyaan: s.Pertanyaan,
+        gambarUrl: normalizeDriveImageUrl(s.GambarURL, s.GambarFileID),
         jenisSoal: s.JenisSoal,
         topik: s.Topik,
         kunciJawaban: s.KunciJawaban
@@ -964,5 +974,55 @@ function exportHasilCsv(sessionToken, paketId, kelasId) {
     success: true,
     fileName: fileName,
     csvContent: csvLines.join('\r\n')
+  };
+}
+
+/**
+ * Memperbaiki izin berbagi file gambar di Google Drive agar dapat diakses publik
+ * serta menormalkan GambarURL di sheet BANK_SOAL.
+ * @param {string} sessionToken Token sesi guru
+ * @return {Object} Status perbaikan
+ */
+function fixImagePermissions(sessionToken) {
+  var session = validateSession(sessionToken);
+  var bankRows = getAllRows(SHEETS.BANK_SOAL);
+  var fixedCount = 0;
+
+  for (var i = 0; i < bankRows.length; i++) {
+    var row = bankRows[i];
+    var fileId = row.GambarFileID;
+    if (!fileId && row.GambarURL) {
+      var m = String(row.GambarURL).match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+              String(row.GambarURL).match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
+              String(row.GambarURL).match(/googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/) ||
+              String(row.GambarURL).match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (m) fileId = m[1];
+    }
+
+    if (fileId) {
+      try {
+        var file = DriveApp.getFileById(fileId);
+        try {
+          file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        } catch (e1) {
+          try {
+            file.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
+          } catch (e2) {}
+        }
+        var newUrl = 'https://lh3.googleusercontent.com/d/' + fileId;
+        updateRow(SHEETS.BANK_SOAL, 'SoalID', row.SoalID, {
+          GambarFileID: fileId,
+          GambarURL: newUrl
+        });
+        fixedCount++;
+      } catch (errFile) {
+        Logger.log('Gagal perbaiki sharing file ' + fileId + ': ' + errFile.message);
+      }
+    }
+  }
+
+  return {
+    success: true,
+    message: 'Berhasil memverifikasi dan memperbarui izin ' + fixedCount + ' gambar soal di Google Drive.'
   };
 }

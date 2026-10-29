@@ -162,6 +162,7 @@ const api = (function() {
     saveSoal: (soalData) => call('saveSoal', { soalData }),
     duplicateSoal: (soalId) => call('duplicateSoal', { soalId }),
     archiveSoal: (soalId) => call('archiveSoal', { soalId }),
+    fixImagePermissions: () => call('fixImagePermissions'),
 
     // Paket Latihan
     getPaketLatihan: () => call('getPaketLatihan'),

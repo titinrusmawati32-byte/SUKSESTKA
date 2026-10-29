@@ -132,6 +132,35 @@ function generateId(prefix) {
 }
 
 /**
+ * Normalisasi URL gambar Google Drive menjadi link CDN direct lh3.googleusercontent.com
+ * yang kompatibel dengan embedding web tanpa diblokir CORS / cross-origin policy.
+ * @param {string} rawUrl URL asli dari database
+ * @param {string} fileId File ID jika tersedia
+ * @return {string} Direct image URL
+ */
+function normalizeDriveImageUrl(rawUrl, fileId) {
+  var id = fileId || '';
+  var raw = String(rawUrl || '').trim();
+  if (raw.indexOf('data:image') === 0) return raw;
+
+  if (!id && raw) {
+    var m = raw.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+            raw.match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
+            raw.match(/googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/) ||
+            raw.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (m) id = m[1];
+    if (!id && /^[a-zA-Z0-9_-]{20,}$/.test(raw) && raw.indexOf('/') === -1 && raw.indexOf('.') === -1) {
+      id = raw;
+    }
+  }
+
+  if (id) {
+    return 'https://lh3.googleusercontent.com/d/' + id;
+  }
+  return raw;
+}
+
+/**
  * Eksekusi dengan LockService untuk mencegah tabrakan data (race condition)
  * @param {Function} callback Fungsi yang akan dijalankan
  * @param {number} timeoutMs Waktu tunggu lock dalam milidetik (default 30000)

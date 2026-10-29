@@ -40,8 +40,8 @@ function validateStudentToken(tokenString) {
 
   // Cek masa berlaku token
   var now = new Date();
-  if (targetToken.BerlakuSampai && targetToken.BerlakuSampai.trim() !== '') {
-    var expDate = new Date(targetToken.BerlakuSampai);
+  if (targetToken.BerlakuSampai) {
+    var expDate = (targetToken.BerlakuSampai instanceof Date) ? targetToken.BerlakuSampai : new Date(targetToken.BerlakuSampai);
     if (!isNaN(expDate.getTime()) && now > expDate) {
       throw new Error('Masa berlaku token latihan ini telah habis.');
     }
@@ -57,17 +57,17 @@ function validateStudentToken(tokenString) {
   }
 
   // Cek jadwal mulai dan selesai paket
-  if (paket.MulaiPada && paket.MulaiPada.trim() !== '') {
-    var startDate = new Date(paket.MulaiPada);
+  if (paket.MulaiPada) {
+    var startDate = (paket.MulaiPada instanceof Date) ? paket.MulaiPada : new Date(paket.MulaiPada);
     if (!isNaN(startDate.getTime()) && now < startDate) {
-      throw new Error('Latihan ini belum dimulai. Waktu mulai: ' + paket.MulaiPada);
+      throw new Error('Latihan ini belum dimulai. Waktu mulai: ' + String(paket.MulaiPada));
     }
   }
 
-  if (paket.SelesaiPada && paket.SelesaiPada.trim() !== '') {
-    var endDate = new Date(paket.SelesaiPada);
+  if (paket.SelesaiPada) {
+    var endDate = (paket.SelesaiPada instanceof Date) ? paket.SelesaiPada : new Date(paket.SelesaiPada);
     if (!isNaN(endDate.getTime()) && now > endDate) {
-      throw new Error('Waktu pengerjaan latihan ini sudah berakhir pada: ' + paket.SelesaiPada);
+      throw new Error('Waktu pengerjaan latihan ini sudah berakhir pada: ' + String(paket.SelesaiPada));
     }
   }
 
@@ -84,7 +84,7 @@ function validateStudentToken(tokenString) {
   // Jika token dibatasi untuk kelas tertentu, ambil data kelas dan daftar siswa
   var kelasData = null;
   var studentList = [];
-  if (targetToken.KelasIDOpsional && targetToken.KelasIDOpsional.trim() !== '') {
+  if (targetToken.KelasIDOpsional && String(targetToken.KelasIDOpsional).trim() !== '') {
     var kelasRow = getAllRows(SHEETS.KELAS).find(function(k) {
       return k.KelasID === targetToken.KelasIDOpsional;
     });
@@ -166,8 +166,8 @@ function startOrResumeSession(tokenString, studentData) {
     if (activeSesi) {
       // Cek apakah batas waktu sudah lewat
       var isExpired = false;
-      if (activeSesi.BatasWaktu && activeSesi.BatasWaktu.trim() !== '') {
-        var deadline = new Date(activeSesi.BatasWaktu);
+      if (activeSesi.BatasWaktu) {
+        var deadline = (activeSesi.BatasWaktu instanceof Date) ? activeSesi.BatasWaktu : new Date(activeSesi.BatasWaktu);
         if (!isNaN(deadline.getTime()) && nowDate > deadline) {
           isExpired = true;
         }
@@ -280,7 +280,7 @@ function buildSessionPayload(sesiObj, paketMeta, isResume) {
         nomorUrut: j + 1,
         jenisSoal: s.JenisSoal,
         pertanyaan: s.Pertanyaan,
-        gambarUrl: s.GambarURL || '',
+        gambarUrl: normalizeDriveImageUrl(s.GambarURL, s.GambarFileID),
         bobot: Number(ps.BobotOverride) || Number(s.Bobot) || 1
       };
 
@@ -340,10 +340,12 @@ function buildSessionPayload(sesiObj, paketMeta, isResume) {
 
   // Hitung sisa detik
   var sisaDetik = null;
-  if (sesiObj.BatasWaktu && sesiObj.BatasWaktu.trim() !== '') {
-    var deadlineDate = new Date(sesiObj.BatasWaktu);
-    var nowMs = new Date().getTime();
-    sisaDetik = Math.max(0, Math.floor((deadlineDate.getTime() - nowMs) / 1000));
+  if (sesiObj.BatasWaktu) {
+    var deadlineDate = (sesiObj.BatasWaktu instanceof Date) ? sesiObj.BatasWaktu : new Date(sesiObj.BatasWaktu);
+    if (!isNaN(deadlineDate.getTime())) {
+      var nowMs = new Date().getTime();
+      sisaDetik = Math.max(0, Math.floor((deadlineDate.getTime() - nowMs) / 1000));
+    }
   }
 
   return {
@@ -384,8 +386,8 @@ function saveStudentAnswer(sesiId, soalId, jawaban) {
 
     // Cek batas waktu
     var now = new Date();
-    if (sesi.BatasWaktu && sesi.BatasWaktu.trim() !== '') {
-      var deadline = new Date(sesi.BatasWaktu);
+    if (sesi.BatasWaktu) {
+      var deadline = (sesi.BatasWaktu instanceof Date) ? sesi.BatasWaktu : new Date(sesi.BatasWaktu);
       if (!isNaN(deadline.getTime()) && now > deadline) {
         autoSubmitSessionOnTimeout(sesiId);
         return { expired: true, message: 'Waktu pengerjaan telah habis. Jawaban telah otomatis dikumpulkan.' };
@@ -663,7 +665,7 @@ function getStudentReview(sesiId) {
     var item = {
       nomorUrut: i + 1,
       pertanyaan: so.Pertanyaan,
-      gambarUrl: so.GambarURL || '',
+      gambarUrl: normalizeDriveImageUrl(so.GambarURL, so.GambarFileID),
       jenisSoal: so.JenisSoal,
       jawabanSiswa: studentAnswer,
       benar: isBenar,

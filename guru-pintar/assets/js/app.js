@@ -117,6 +117,52 @@ const app = (function() {
     document.body.removeChild(link);
   }
 
+  /* --- Utilitas Format & Fallback Gambar Google Drive --- */
+  function getDriveFileId(url) {
+    if (!url || typeof url !== 'string') return '';
+    const str = url.trim();
+    if (str.startsWith('data:image')) return '';
+
+    let match = str.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) return match[1];
+
+    match = str.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) return match[1];
+
+    match = str.match(/googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) return match[1];
+
+    match = str.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) return match[1];
+
+    if (/^[a-zA-Z0-9_-]{20,}$/.test(str) && !str.includes('/') && !str.includes('.')) {
+      return str;
+    }
+    return '';
+  }
+
+  function formatDriveImageUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    const str = url.trim();
+    if (str.startsWith('data:image')) return str;
+
+    const fileId = getDriveFileId(str);
+    if (fileId) {
+      return `https://lh3.googleusercontent.com/d/${fileId}`;
+    }
+    return str;
+  }
+
+  async function fixDriveImages() {
+    showToast('Memeriksa dan memperbaiki izin gambar di Google Drive...', 'info', 4000);
+    try {
+      const res = await api.fixImagePermissions();
+      showToast(res.message || 'Izin gambar Drive berhasil diperbarui!', 'success', 5000);
+    } catch (err) {
+      showToast('Gagal memperbaiki izin Drive: ' + err.message, 'error', 5000);
+    }
+  }
+
   /* --- Navigasi Portal Guru --- */
   function toggleSidebar() {
     document.getElementById('teacherSidebar')?.classList.toggle('open');
@@ -318,6 +364,9 @@ const app = (function() {
     switchTeacherView,
     initTeacherPortal,
     showStudentEntryScreen,
+    getDriveFileId,
+    formatDriveImageUrl,
+    fixDriveImages,
     handlePasswordChangeSubmit,
     runDatabaseSetupVerification,
     openTeacherLoginModal,

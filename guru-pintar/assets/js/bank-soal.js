@@ -173,7 +173,9 @@ const bankSoal = (function() {
     }
 
     if (s.GambarURL) {
-      document.getElementById('soalImagePreview').src = s.GambarURL;
+      const imgPreview = document.getElementById('soalImagePreview');
+      imgPreview.referrerPolicy = 'no-referrer';
+      imgPreview.src = app.formatDriveImageUrl(s.GambarURL);
       document.getElementById('soalImagePreviewContainer').classList.remove('hidden');
     } else {
       removeImage();
@@ -274,7 +276,9 @@ const bankSoal = (function() {
     `;
 
     if (s.GambarURL) {
-      html += `<img src="${app.escapeHtml(s.GambarURL)}" class="question-image">`;
+      const imgUrl = app.formatDriveImageUrl(s.GambarURL);
+      const fId = app.getDriveFileId(s.GambarURL);
+      html += `<img src="${app.escapeHtml(imgUrl)}" class="question-image" referrerpolicy="no-referrer" onerror="const f='${fId}'; if(f && !this.dataset.t){this.dataset.t='1'; this.src='https://drive.google.com/thumbnail?id='+f+'&sz=w1000';}">`;
     }
 
     if (s.JenisSoal === 'PILIHAN_GANDA') {
