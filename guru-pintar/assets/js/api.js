@@ -12,7 +12,7 @@ const api = (function() {
 
   // Konfigurasi URL Deployment Web App Google Apps Script
   const CONFIG = {
-    DEFAULT_URL: 'https://script.google.com/macros/s/AKfycbz7Mg7Pu4vKi21USdSsvHnt7QYd2tOdNMqr2bkRtcE_Fhp-0OuZYgomtHumxNocuJ2m/exec',
+    DEFAULT_URL: 'https://script.google.com/macros/s/AKfycbwu1pQN_wK3T8luVO7W6_jyA0X6jxUi4WwitSSMFQ1sMo1paZITI0khI6mkMidpQORb/exec',
     STORAGE_KEY: 'lms_gas_api_url',
     
     getUrl: function() {
