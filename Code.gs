@@ -161,8 +161,9 @@ function handleApiAction(action, sessionToken, data) {
     case 'duplicateSoal':
       return duplicateSoal(sessionToken, data.soalId);
 
+    case 'deleteSoal':
     case 'archiveSoal':
-      return archiveSoal(sessionToken, data.soalId);
+      return deleteSoal(sessionToken, data.soalId);
 
     case 'fixImagePermissions':
       return fixImagePermissions(sessionToken);
@@ -179,6 +180,9 @@ function handleApiAction(action, sessionToken, data) {
 
     case 'updatePaketStatus':
       return updatePaketStatus(sessionToken, data.paketId, data.status);
+
+    case 'deletePaketLatihan':
+      return deletePaketLatihan(sessionToken, data.paketId);
 
     // --- TOKEN SISWA ---
     case 'getPaketTokens':

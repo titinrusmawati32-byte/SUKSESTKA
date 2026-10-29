@@ -230,9 +230,16 @@ const api = (function() {
       invalidateTags(['soal', 'dashboard']);
       return res;
     },
+    deleteSoal: async (soalId) => {
+      if (typeof cacheService !== 'undefined') cacheService.clearTag('soal');
+      const res = await call('deleteSoal', { soalId });
+      invalidateTags(['soal', 'dashboard', 'paket']);
+      return res;
+    },
     archiveSoal: async (soalId) => {
-      const res = await call('archiveSoal', { soalId });
-      invalidateTags(['soal', 'dashboard']);
+      if (typeof cacheService !== 'undefined') cacheService.clearTag('soal');
+      const res = await call('deleteSoal', { soalId });
+      invalidateTags(['soal', 'dashboard', 'paket']);
       return res;
     },
     fixImagePermissions: () => {
@@ -253,6 +260,12 @@ const api = (function() {
     updatePaketStatus: async (paketId, status) => {
       const res = await call('updatePaketStatus', { paketId, status });
       invalidateTags(['paket', 'dashboard']);
+      return res;
+    },
+    deletePaketLatihan: async (paketId) => {
+      if (typeof cacheService !== 'undefined') cacheService.clearTag('paket');
+      const res = await call('deletePaketLatihan', { paketId });
+      invalidateTags(['paket', 'dashboard', 'token']);
       return res;
     },
 

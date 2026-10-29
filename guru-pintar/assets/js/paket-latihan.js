@@ -47,6 +47,7 @@ const paketLatihan = (function() {
               ${p.Status !== 'TERBIT' ? `<button class="btn btn-success btn-sm" onclick="paketLatihan.setStatus('${p.PaketID}', 'TERBIT')">Terbitkan</button>` : ''}
               ${p.Status === 'TERBIT' ? `<button class="btn btn-warning btn-sm" onclick="paketLatihan.setStatus('${p.PaketID}', 'TUTUP')">Tutup</button>` : ''}
               <button class="btn btn-primary btn-sm" onclick="tokenSiswa.quickCreate('${p.PaketID}')">🔑 Token</button>
+              <button class="btn btn-danger btn-sm" onclick="paketLatihan.deletePaket('${p.PaketID}')" title="Hapus Paket">🗑️</button>
             </td>
           </tr>
         `;
@@ -214,12 +215,31 @@ const paketLatihan = (function() {
     }
   }
 
+  function deletePaket(paketId) {
+    const p = cachedPaketList.find(item => item.PaketID === paketId);
+    const title = p ? `"${app.escapeHtml(p.Judul)}"` : 'paket ini';
+
+    app.showConfirmModal('Hapus Paket Latihan', `Apakah Anda yakin ingin menghapus ${title}? Paket akan dihapus secara permanen dari server dan database Google Sheets.`, async function() {
+      cachedPaketList = cachedPaketList.filter(item => item.PaketID !== paketId);
+      app.showToast('Menghapus paket latihan...', 'info', 2000);
+      try {
+        const res = await api.deletePaketLatihan(paketId);
+        app.showToast(res.message || 'Paket berhasil dihapus permanen!', 'success');
+        await load();
+      } catch (err) {
+        app.showToast('Gagal menghapus: ' + err.message, 'error');
+        await load();
+      }
+    });
+  }
+
   return {
     load,
     openModal,
     edit,
     save,
     setStatus,
+    deletePaket,
     updateSelectedPickerCount,
     toggleSelectAllPicker,
     filterPicker,

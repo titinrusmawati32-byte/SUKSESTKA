@@ -152,15 +152,18 @@ function saveKelas(sessionToken, kelasData) {
 }
 
 /**
- * Mengarsipkan kelas
+ * Menghapus kelas secara permanen dari database beserta seluruh siswa di dalamnya
  * @param {string} sessionToken Token sesi
  * @param {string} kelasId ID Kelas
- * @return {Object} Status arsip
+ * @return {Object} Status hapus
  */
 function archiveKelas(sessionToken, kelasId) {
   var session = validateSession(sessionToken);
-  updateRow(SHEETS.KELAS, 'KelasID', kelasId, { Aktif: false });
-  return { success: true, message: 'Kelas berhasil diarsipkan.' };
+  deleteRow(SHEETS.KELAS, 'KelasID', kelasId);
+  deleteRowsBatchByCondition(SHEETS.SISWA, function(s) { return s.KelasID === kelasId; });
+  invalidateSheetCache(SHEETS.KELAS);
+  invalidateSheetCache(SHEETS.SISWA);
+  return { success: true, message: 'Kelas berhasil dihapus permanen.' };
 }
 
 /**
@@ -227,15 +230,16 @@ function saveSiswa(sessionToken, siswaData) {
 }
 
 /**
- * Menghapus siswa (soft delete / set Aktif = false)
+ * Menghapus siswa secara permanen dari database
  * @param {string} sessionToken Token sesi
  * @param {string} siswaId ID Siswa
  * @return {Object} Status hapus
  */
 function deleteSiswa(sessionToken, siswaId) {
   var session = validateSession(sessionToken);
-  updateRow(SHEETS.SISWA, 'SiswaID', siswaId, { Aktif: false });
-  return { success: true, message: 'Siswa berhasil dihapus.' };
+  deleteRow(SHEETS.SISWA, 'SiswaID', siswaId);
+  invalidateSheetCache(SHEETS.SISWA);
+  return { success: true, message: 'Siswa berhasil dihapus permanen.' };
 }
 
 /* ============================================================================
@@ -254,6 +258,8 @@ function getBankSoal(sessionToken, filters) {
 
   var list = getAllRows(SHEETS.BANK_SOAL).filter(function(s) {
     if (s.GuruID !== session.guruId) return false;
+    // Kecualikan jika status arsip atau dihapus
+    if (s.Status === 'ARSIP' || s.Status === 'DELETED') return false;
     if (f.MataPelajaran && s.MataPelajaran !== f.MataPelajaran) return false;
     if (f.Tingkat && String(s.Tingkat) !== String(f.Tingkat)) return false;
     if (f.JenisSoal && s.JenisSoal !== f.JenisSoal) return false;
@@ -420,18 +426,66 @@ function duplicateSoal(sessionToken, soalId) {
 }
 
 /**
- * Mengarsipkan atau menghapus soal
+ * Menghapus soal secara permanen dari Bank Soal, Google Sheets, dan Google Drive
  * @param {string} sessionToken Token sesi
- * @param {string} soalId ID Soal
- * @return {Object} Status
+ * @param {string} soalId ID Soal yang ingin dihapus
+ * @return {Object} Status hapus
  */
-function archiveSoal(sessionToken, soalId) {
+function deleteSoal(sessionToken, soalId) {
   var session = validateSession(sessionToken);
-  updateRow(SHEETS.BANK_SOAL, 'SoalID', soalId, {
-    Status: 'ARSIP',
-    DiperbaruiPada: getJakartaTimestamp()
+  if (!soalId) throw new Error('ID Soal wajib disertakan.');
+
+  return withScriptLock(function() {
+    var allRows = getAllRows(SHEETS.BANK_SOAL);
+    var target = allRows.find(function(s) {
+      return String(s.SoalID).trim() === String(soalId).trim() && s.GuruID === session.guruId;
+    });
+
+    if (!target) {
+      throw new Error('Soal tidak ditemukan atau bukan milik Anda.');
+    }
+
+    // 1. Hapus gambar terkait dari Google Drive jika ada
+    if (target.GambarFileID) {
+      try {
+        var driveFile = DriveApp.getFileById(target.GambarFileID);
+        if (driveFile) driveFile.setTrashed(true);
+      } catch (eDrive) {
+        Logger.log('Hapus file Drive info: ' + eDrive.message);
+      }
+    }
+
+    // 2. Hapus baris dari Google Sheets sheet BANK_SOAL secara fisik
+    var deleted = deleteRow(SHEETS.BANK_SOAL, 'SoalID', soalId);
+    if (!deleted) {
+      deleted = deleteRowsBatchByCondition(SHEETS.BANK_SOAL, function(s) {
+        return String(s.SoalID).trim() === String(soalId).trim() && s.GuruID === session.guruId;
+      }) > 0;
+    }
+
+    // 3. Bersihkan juga relasi soal ini dari sheet PAKET_SOAL jika ada
+    try {
+      deleteRowsBatchByCondition(SHEETS.PAKET_SOAL, function(ps) {
+        return String(ps.SoalID).trim() === String(soalId).trim();
+      });
+    } catch (ePs) {
+      Logger.log('Bersihkan relasi paket soal info: ' + ePs.message);
+    }
+
+    // 4. Invalidasi cache memori dan CacheService
+    invalidateSheetCache(SHEETS.BANK_SOAL);
+    invalidateSheetCache(SHEETS.PAKET_SOAL);
+
+    return {
+      success: true,
+      message: 'Soal berhasil dihapus permanen dari server dan database.',
+      soalId: soalId
+    };
   });
-  return { success: true, message: 'Soal berhasil diarsipkan.' };
+}
+
+function archiveSoal(sessionToken, soalId) {
+  return deleteSoal(sessionToken, soalId);
 }
 
 /* ============================================================================
@@ -625,6 +679,29 @@ function updatePaketStatus(sessionToken, paketId, status) {
   });
 
   return { success: true, message: 'Status paket berhasil diubah menjadi ' + status };
+}
+
+/**
+ * Menghapus paket latihan secara permanen dari database
+ * @param {string} sessionToken Token sesi
+ * @param {string} paketId ID Paket Latihan
+ * @return {Object} Status hapus
+ */
+function deletePaketLatihan(sessionToken, paketId) {
+  var session = validateSession(sessionToken);
+  if (!paketId) throw new Error('ID Paket wajib disertakan.');
+
+  return withScriptLock(function() {
+    deleteRow(SHEETS.PAKET_LATIHAN, 'PaketID', paketId);
+    deleteRowsBatchByCondition(SHEETS.PAKET_SOAL, function(ps) { return ps.PaketID === paketId; });
+    deleteRowsBatchByCondition(SHEETS.TOKEN_AKSES, function(t) { return t.PaketID === paketId; });
+
+    invalidateSheetCache(SHEETS.PAKET_LATIHAN);
+    invalidateSheetCache(SHEETS.PAKET_SOAL);
+    invalidateSheetCache(SHEETS.TOKEN_AKSES);
+
+    return { success: true, message: 'Paket latihan berhasil dihapus permanen dari database.' };
+  });
 }
 
 /* ============================================================================

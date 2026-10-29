@@ -50,6 +50,7 @@ const bankSoal = (function() {
     const search = (document.getElementById('bankSearch')?.value || '').toLowerCase().trim();
 
     filteredList = cachedSoalList.filter(s => {
+      if (s.Status === 'ARSIP' || s.Status === 'DELETED') return false;
       if (mapel && s.MataPelajaran !== mapel) return false;
       if (jenis && s.JenisSoal !== jenis) return false;
       if (search) {
@@ -103,7 +104,7 @@ const bankSoal = (function() {
             <button class="btn btn-secondary btn-sm" onclick="bankSoal.preview('${s.SoalID}')" title="Pratinjau">👁️</button>
             <button class="btn btn-secondary btn-sm" onclick="bankSoal.edit('${s.SoalID}')" title="Edit">✏️</button>
             <button class="btn btn-secondary btn-sm" onclick="bankSoal.duplicate('${s.SoalID}')" title="Duplikasi">📋</button>
-            <button class="btn btn-danger btn-sm" onclick="bankSoal.archive('${s.SoalID}')" title="Arsip">🗑️</button>
+            <button class="btn btn-danger btn-sm" onclick="bankSoal.deleteSoal('${s.SoalID}')" title="Hapus Permanen">🗑️</button>
           </td>
         </tr>
       `;
@@ -323,16 +324,35 @@ const bankSoal = (function() {
     }
   }
 
-  function archive(soalId) {
-    app.showConfirmModal('Arsipkan Soal', 'Apakah Anda yakin ingin mengarsipkan soal ini?', async function() {
-      try {
-        const res = await api.archiveSoal(soalId);
-        app.showToast(res.message || 'Soal berhasil diarsipkan', 'success');
-        load();
-      } catch (err) {
-        app.showToast(err.message, 'error');
+  function deleteSoal(soalId) {
+    const s = cachedSoalList.find(item => item.SoalID === soalId);
+    const qPreview = s ? `"${app.escapeHtml(s.Pertanyaan.substring(0, 45))}..."` : 'soal ini';
+
+    app.showConfirmModal(
+      'Hapus Soal Permanen',
+      `Apakah Anda yakin ingin menghapus ${qPreview}? Soal akan dihapus secara permanen dari server dan database Google Sheets.`,
+      async function() {
+        // Optimistic UI update: langsung hilangkan soal dari tampilan tabel browser
+        cachedSoalList = cachedSoalList.filter(item => item.SoalID !== soalId);
+        applyFilterAndRender();
+
+        app.showToast('Menghapus soal dari server dan database...', 'info', 2000);
+
+        try {
+          const res = await api.deleteSoal(soalId);
+          app.showToast(res.message || 'Soal berhasil dihapus permanen dari database!', 'success');
+          // Muat ulang dengan force = true untuk memastikan sinkronisasi 100%
+          await load(true);
+        } catch (err) {
+          app.showToast('Gagal menghapus soal: ' + err.message, 'error');
+          await load(true);
+        }
       }
-    });
+    );
+  }
+
+  function archive(soalId) {
+    deleteSoal(soalId);
   }
 
   function preview(soalId) {
@@ -469,6 +489,7 @@ const bankSoal = (function() {
     edit,
     save,
     duplicate,
+    deleteSoal,
     archive,
     preview,
     handleJenisSoalChange,
