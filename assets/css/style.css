@@ -2106,3 +2106,530 @@ textarea.form-control {
   vertical-align: middle;
   margin-right: 6px;
 }
+
+/* ==========================================================================
+   HALAMAN HASIL LATIHAN OTOMATIS (SECTION 2)
+   ========================================================================== */
+.result-container-card {
+  max-width: 780px;
+  margin: 20px auto 40px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 36px 32px;
+  box-shadow: var(--shadow-clay);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+.result-trophy-badge {
+  font-size: 56px;
+  line-height: 1;
+  margin-bottom: 12px;
+  animation: bounceTrophy 1.2s ease-in-out;
+}
+
+@keyframes bounceTrophy {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-8px) scale(1.08); }
+}
+
+.result-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.result-subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.result-info-card {
+  background: #f8fafc;
+  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-subtle);
+}
+
+.result-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px 20px;
+}
+
+.result-info-item {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.result-info-item .info-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+}
+
+.result-info-item .info-value {
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.result-score-hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 24px;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border-radius: var(--radius-lg);
+  border: 2px solid #ddd6fe;
+}
+
+.score-circle-wrap {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.35);
+  flex-shrink: 0;
+}
+
+.score-number {
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+.score-meta-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.score-percent-pill {
+  display: inline-block;
+  padding: 6px 14px;
+  background: #ffffff;
+  color: #6366f1;
+  font-size: 14px;
+  font-weight: 800;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.score-feedback-text {
+  font-size: 18px;
+  color: #4338ca;
+}
+
+.result-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.res-stat-card {
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  padding: 16px 12px;
+  text-align: center;
+  box-shadow: var(--shadow-clay-sm);
+  border: 1px solid var(--border-subtle);
+  transition: transform 0.2s;
+}
+
+.res-stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.res-stat-icon {
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.res-stat-val {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.res-stat-lbl {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.result-review-cta-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+  border: 1.5px solid #a7f3d0;
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  text-align: left;
+}
+
+.result-review-cta-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.22);
+}
+
+.result-review-cta-card .cta-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.result-review-cta-card .cta-icon-bubble {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+}
+
+.result-review-cta-card .cta-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 2px 0;
+}
+
+.result-review-cta-card .cta-desc {
+  font-size: 13px;
+  color: #475569;
+  margin: 0;
+}
+
+.result-actions-flex {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-glow-purple {
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+}
+
+/* ==========================================================================
+   HALAMAN PEMBAHASAN SOAL (SECTION 4)
+   ========================================================================== */
+.review-header-card {
+  max-width: 860px;
+  margin: 0 auto 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 18px 24px;
+  box-shadow: var(--shadow-clay-sm);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.review-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.review-header-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 2px;
+}
+
+.review-header-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.review-score-badge {
+  font-size: 16px;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+}
+
+.review-filter-bar {
+  max-width: 860px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-bar-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.review-filter-pill {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.review-filter-pill.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(93, 60, 246, 0.3);
+}
+
+.review-filter-pill.pill-green.active {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.review-filter-pill.pill-red.active {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+.review-filter-pill.pill-gray.active {
+  background: #6b7280;
+  border-color: #6b7280;
+}
+
+.review-items-container {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.review-item-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-clay-sm);
+  border: 1.5px solid var(--border-subtle);
+  transition: transform 0.2s ease;
+}
+
+.review-item-card.card-benar {
+  border-left: 6px solid #10b981;
+}
+
+.review-item-card.card-salah {
+  border-left: 6px solid #ef4444;
+}
+
+.review-item-card.card-kosong {
+  border-left: 6px solid #9ca3af;
+}
+
+.review-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.review-q-num {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.review-status-badge {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  text-transform: uppercase;
+}
+
+.review-status-benar {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.review-status-salah {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.review-status-kosong {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
+.review-question-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.review-options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.review-option-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  font-size: 14px;
+}
+
+.review-option-row.opt-selected-benar {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #065f46;
+  font-weight: 700;
+}
+
+.review-option-row.opt-selected-salah {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
+  font-weight: 700;
+}
+
+.review-option-row.opt-is-key {
+  border: 1.5px solid #10b981;
+}
+
+.review-opt-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  background: #e2e8f0;
+  color: var(--text-main);
+  flex-shrink: 0;
+}
+
+.opt-selected-benar .review-opt-badge,
+.opt-is-key .review-opt-badge {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.opt-selected-salah .review-opt-badge {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.review-answer-summary-box {
+  background: #f8fafc;
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border-subtle);
+  font-size: 14px;
+}
+
+.review-explanation-box {
+  background: #fffbeb;
+  border: 1.5px solid #fef3c7;
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+}
+
+.explanation-header {
+  font-size: 13px;
+  font-weight: 800;
+  color: #92400e;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.explanation-body {
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+
+.review-bottom-actions {
+  max-width: 860px;
+  margin: 24px auto 40px;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .result-container-card {
+    padding: 24px 16px;
+    margin: 12px auto 30px;
+  }
+  .result-score-hero {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  .score-meta-badge {
+    align-items: center;
+  }
+  .result-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .review-header-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

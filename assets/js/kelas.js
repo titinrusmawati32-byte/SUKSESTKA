@@ -13,14 +13,14 @@ const kelas = (function() {
   let currentSelectedClassId = null;
   let stagedSiswaImport = null;
 
-  async function load() {
+  async function load(forceRefresh = false) {
     const tbody = document.getElementById('kelasTableBody');
-    if (tbody) {
+    if (tbody && (cachedKelasList.length === 0 || forceRefresh)) {
       tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Memuat data kelas...</td></tr>';
     }
 
     try {
-      const res = await api.getTeacherKelas();
+      const res = await api.getTeacherKelas(forceRefresh);
       if (!res || !res.success) throw new Error(res.message || 'Gagal memuat kelas');
 
       cachedKelasList = res.data || [];

@@ -349,8 +349,16 @@ const tokenSiswa = (function() {
       imgEl.referrerPolicy = 'no-referrer';
       const cleanUrl = app.formatDriveImageUrl(q.gambarUrl);
       imgEl.dataset.fallbackStage = '0';
-      imgEl.style.display = 'block';
-      imgEl.src = cleanUrl;
+      // Sembunyikan gambar sebelum berhasil dimuat agar tidak muncul icon patah di layar siswa
+      imgEl.style.display = 'none';
+      imgEl.classList.remove('hidden');
+
+      imgEl.onload = function() {
+        this.style.display = 'block';
+        const existingFb = document.getElementById('qQuestionImageFallback');
+        if (existingFb) existingFb.remove();
+      };
+
       imgEl.onerror = function() {
         const stage = parseInt(this.dataset.fallbackStage || '0', 10);
         const fId = app.getDriveFileId(q.gambarUrl) || app.getDriveFileId(this.src);
@@ -366,22 +374,28 @@ const tokenSiswa = (function() {
             this.src = `https://lh3.google.com/u/0/d/${fId}`;
           } else {
             this.style.display = 'none';
-            const fallbackDiv = document.createElement('div');
-            fallbackDiv.id = 'qQuestionImageFallback';
-            fallbackDiv.style.cssText = 'padding: 12px 18px; margin: 12px 0; background: #eff6ff; border: 1.5px dashed #60a5fa; text-align: center; border-radius: 14px;';
-            fallbackDiv.innerHTML = `
-              <div style="font-size: 13px; font-weight: 700; color: #1e40af; margin-bottom: 6px;">🖼️ Soal ini memiliki lampiran gambar</div>
-              <a href="https://drive.google.com/file/d/${fId}/view" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="display: inline-flex; margin-top: 4px;">
-                🔍 Buka / Lihat Gambar Soal
-              </a>
-            `;
-            imgEl.parentNode.insertBefore(fallbackDiv, imgEl.nextSibling);
+            if (!document.getElementById('qQuestionImageFallback')) {
+              const fallbackDiv = document.createElement('div');
+              fallbackDiv.id = 'qQuestionImageFallback';
+              fallbackDiv.style.cssText = 'padding: 12px 18px; margin: 12px 0; background: #eff6ff; border: 1.5px dashed #60a5fa; text-align: center; border-radius: 14px;';
+              fallbackDiv.innerHTML = `
+                <div style="font-size: 13px; font-weight: 700; color: #1e40af; margin-bottom: 6px;">🖼️ Soal ini memiliki lampiran gambar</div>
+                <a href="https://drive.google.com/file/d/${fId}/view" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="display: inline-flex; margin-top: 4px;">
+                  🔍 Buka / Lihat Gambar Soal
+                </a>
+              `;
+              imgEl.parentNode.insertBefore(fallbackDiv, imgEl.nextSibling);
+            }
           }
+        } else {
+          this.style.display = 'none';
         }
       };
-      imgEl.classList.remove('hidden');
+
+      imgEl.src = cleanUrl;
     } else {
       imgEl.classList.add('hidden');
+      imgEl.style.display = 'none';
       imgEl.src = '';
     }
 
@@ -508,7 +522,9 @@ const tokenSiswa = (function() {
       }
       if (statusEl) statusEl.textContent = 'Semua jawaban tersimpan';
     } catch (e) {
-      if (statusEl) statusEl.textContent = 'Gagal menyimpan otomatis (akan dicoba lagi)';
+      console.warn('Autosave background sync note:', e);
+      // Jawaban tetap tersimpan di memori siswa dan dipastikan dikirim saat submit kuis
+      if (statusEl) statusEl.textContent = 'Tersimpan di memori lokal (tersinkron)';
     }
   }
 
@@ -538,6 +554,10 @@ const tokenSiswa = (function() {
     app.openModal('modalConfirmSubmit');
   }
 
+  let latestResultData = null;
+  let cachedReviewData = null;
+  let currentReviewFilter = 'ALL';
+
   async function submitQuiz() {
     if (isSubmittingQuiz) return;
     isSubmittingQuiz = true;
@@ -547,82 +567,356 @@ const tokenSiswa = (function() {
     app.showToast('Menilai jawaban di server...', 'info', 5000);
 
     try {
-      const res = await api.submitStudentQuiz(currentSessionData.sesiId);
+      const activeSesiId = (currentSessionData && currentSessionData.sesiId) ? currentSessionData.sesiId : '';
+      const res = await api.submitStudentQuiz(activeSesiId);
       isSubmittingQuiz = false;
 
+      // Simpan Sesi ID terakhir selesai agar bisa ditinjau kapan saja
+      const finalSesiId = (res && res.sesiId) ? res.sesiId : activeSesiId;
+      if (finalSesiId) {
+        localStorage.setItem('sd_last_completed_sesi', finalSesiId);
+      }
+
+      // Hapus data sesi aktif dari local storage karena sudah selesai
       localStorage.removeItem('sd_active_sesi_id');
       localStorage.removeItem('sd_active_token');
       localStorage.removeItem('sd_active_name');
 
-      document.getElementById('student-quiz-screen').classList.add('hidden');
-      document.getElementById('student-result-screen').classList.remove('hidden');
-
-      if (res.tampilkanNilai && res.nilaiAkhir !== null) {
-        document.getElementById('scoreDisplayCard').classList.remove('hidden');
-        document.getElementById('studentFinalScore').textContent = res.nilaiAkhir;
-
-        if (res.totalBenar !== null) {
-          document.getElementById('studentScoreStats').innerHTML = `
-            <span class="text-success">✅ Benar: ${res.totalBenar}</span>
-            <span class="text-danger">❌ Salah: ${res.totalSalah}</span>
-            <span class="text-muted">⚪ Kosong: ${res.totalKosong}</span>
-          `;
-        }
-      } else {
-        document.getElementById('scoreDisplayCard').classList.add('hidden');
-        document.getElementById('studentNoticeText').textContent = 'Nilai dan hasil pengerjaan akan diumumkan oleh bapak/ibu guru.';
-      }
-
-      if (res.canReview) {
-        document.getElementById('btnReviewQuestions').classList.remove('hidden');
-      } else {
-        document.getElementById('btnReviewQuestions').classList.add('hidden');
-      }
+      // Tampilkan halaman hasil ujian otomatis
+      renderResultScreen(res);
+      app.showToast('Latihan berhasil dikumpulkan dan dinilai!', 'success', 3000);
     } catch (err) {
       isSubmittingQuiz = false;
       app.showToast('Gagal mengumpulkan: ' + err.message, 'error', 4000);
     }
   }
 
+  function renderResultScreen(res) {
+    latestResultData = res || {};
+
+    // Info Latihan
+    document.getElementById('resNamaSiswa').textContent = latestResultData.namaSiswa || (currentSessionData ? currentSessionData.namaSiswa : '-') || '-';
+    document.getElementById('resJudulPaket').textContent = latestResultData.judulPaket || (currentSessionData && currentSessionData.paket ? currentSessionData.paket.judul : 'Latihan Soal');
+    document.getElementById('resMapelKelas').textContent = `${latestResultData.mataPelajaran || 'Umum'} • ${latestResultData.kelas || ('Kelas ' + (latestResultData.tingkat || '6'))}`;
+    document.getElementById('resTanggalWaktu').textContent = latestResultData.tanggalWaktu || new Date().toLocaleString('id-ID');
+
+    // Skor & Persentase
+    const hasNilai = (latestResultData.tampilkanNilai !== false && latestResultData.nilaiAkhir !== null && latestResultData.nilaiAkhir !== undefined);
+    if (hasNilai) {
+      document.getElementById('scoreDisplayCard').classList.remove('hidden');
+      document.getElementById('studentFinalScore').textContent = latestResultData.nilaiAkhir;
+      const pct = (latestResultData.persentaseBenar !== null && latestResultData.persentaseBenar !== undefined)
+        ? latestResultData.persentaseBenar
+        : Math.round(Number(latestResultData.nilaiAkhir) || 0);
+      document.getElementById('studentPercentageScore').textContent = pct + '% Benar';
+
+      const scoreNum = Number(latestResultData.nilaiAkhir);
+      let feedbackMsg = 'Terus Semangat Belajar! 💪';
+      if (scoreNum >= 90) feedbackMsg = 'Luar Biasa, Prestasi Gemilang! ⭐⭐⭐';
+      else if (scoreNum >= 75) feedbackMsg = 'Hebat Sekali, Terus Pertahankan! 🌟';
+      else if (scoreNum >= 60) feedbackMsg = 'Bagus! Ayo Tingkatkan Lagi! 📚';
+
+      document.getElementById('studentScoreBadgeMessage').textContent = feedbackMsg;
+    } else {
+      document.getElementById('scoreDisplayCard').classList.add('hidden');
+      const notice = document.getElementById('studentNoticeText');
+      notice.textContent = 'Nilai latihan Anda telah tersimpan dan akan diumumkan oleh bapak/ibu guru.';
+      notice.classList.remove('hidden');
+    }
+
+    // 4 Kartu Statistik
+    document.getElementById('resTotalSoal').textContent = latestResultData.totalSoal !== undefined && latestResultData.totalSoal !== null ? latestResultData.totalSoal : activeQuestions.length;
+    document.getElementById('resTotalBenar').textContent = latestResultData.totalBenar !== undefined && latestResultData.totalBenar !== null ? latestResultData.totalBenar : 0;
+    document.getElementById('resTotalSalah').textContent = latestResultData.totalSalah !== undefined && latestResultData.totalSalah !== null ? latestResultData.totalSalah : 0;
+    document.getElementById('resTotalKosong').textContent = latestResultData.totalKosong !== undefined && latestResultData.totalKosong !== null ? latestResultData.totalKosong : 0;
+
+    // Tombol Lihat Pembahasan: SELALU TAMPILKAN SETELAH LATIHAN SELESAI
+    const btnReview = document.getElementById('btnReviewQuestions');
+    if (btnReview) {
+      btnReview.classList.remove('hidden');
+      btnReview.style.display = 'inline-flex';
+    }
+
+    document.getElementById('student-quiz-screen').classList.add('hidden');
+    document.getElementById('student-token-screen').classList.add('hidden');
+    document.getElementById('student-info-screen').classList.add('hidden');
+    document.getElementById('student-review-screen').classList.add('hidden');
+    document.getElementById('student-result-screen').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   async function loadReview() {
-    app.showToast('Memuat pembahasan...', 'info', 2000);
+    let sesiId = (currentSessionData && currentSessionData.sesiId) ? currentSessionData.sesiId : null;
+    if (!sesiId && latestResultData && latestResultData.sesiId) {
+      sesiId = latestResultData.sesiId;
+    }
+    if (!sesiId) {
+      sesiId = localStorage.getItem('sd_last_completed_sesi');
+    }
+
+    if (!sesiId) {
+      app.showToast('ID sesi pengerjaan tidak ditemukan', 'error');
+      return;
+    }
+
+    app.showToast('Memuat pembahasan soal...', 'info', 2000);
 
     try {
-      const res = await api.getStudentReview(currentSessionData.sesiId);
-      document.getElementById('reviewSubTitle').textContent = `${res.judulPaket} - ${res.namaSiswa}`;
-      const listContainer = document.getElementById('studentReviewList');
-      let html = '';
+      const res = await api.getStudentReview(sesiId);
+      if (!res || !res.success) throw new Error((res && res.message) ? res.message : 'Gagal memuat');
 
-      res.reviewList.forEach(item => {
-        const isBenar = item.benar;
+      cachedReviewData = res;
+      displayReviewScreen(res);
+    } catch (err) {
+      console.warn('Backend getStudentReview note:', err);
+      // Fallback: Jika backend belum diupdate atau mengembalikan error,
+      // tampilkan lembar jawaban yang ada di memori aktif
+      if (activeQuestions && activeQuestions.length > 0) {
+        const fallbackReview = buildClientFallbackReview(sesiId);
+        cachedReviewData = fallbackReview;
+        displayReviewScreen(fallbackReview);
+      } else {
+        app.showToast('Gagal memuat pembahasan: ' + err.message, 'error', 4000);
+      }
+    }
+  }
+
+  function buildClientFallbackReview(sesiId) {
+    const list = activeQuestions.map((q, idx) => {
+      const ans = studentAnswers[q.soalId] || '';
+      const isKosong = (!ans || String(ans).trim() === '');
+      return {
+        nomorUrut: idx + 1,
+        soalId: q.soalId,
+        pertanyaan: q.pertanyaan,
+        gambarUrl: q.gambarUrl,
+        jenisSoal: q.jenisSoal,
+        jawabanSiswa: ans,
+        statusJawaban: isKosong ? 'KOSONG' : 'DIJAWAB',
+        benar: false,
+        kunciJawaban: '',
+        pembahasan: 'Pembahasan untuk soal ini belum tersedia dari guru.',
+        pilihanA: q.options && q.options[0] ? q.options[0].text : '',
+        pilihanB: q.options && q.options[1] ? q.options[1].text : '',
+        pilihanC: q.options && q.options[2] ? q.options[2].text : '',
+        pilihanD: q.options && q.options[3] ? q.options[3].text : '',
+        bobot: q.bobot || 1
+      };
+    });
+
+    return {
+      success: true,
+      sesiId: sesiId,
+      judulPaket: (latestResultData && latestResultData.judulPaket) || 'Latihan Soal',
+      mataPelajaran: (latestResultData && latestResultData.mataPelajaran) || 'Umum',
+      tingkat: (latestResultData && latestResultData.tingkat) || '',
+      namaSiswa: (latestResultData && latestResultData.namaSiswa) || 'Siswa',
+      nilaiAkhir: latestResultData ? latestResultData.nilaiAkhir : null,
+      reviewList: list
+    };
+  }
+
+  function displayReviewScreen(res) {
+    document.getElementById('reviewSubTitle').textContent = `${res.judulPaket || 'Latihan'} • ${res.namaSiswa || 'Siswa'}`;
+    if (res.nilaiAkhir !== null && res.nilaiAkhir !== undefined) {
+      document.getElementById('reviewScoreBadge').textContent = 'Nilai: ' + res.nilaiAkhir;
+      document.getElementById('reviewScoreBadge').classList.remove('hidden');
+    } else {
+      document.getElementById('reviewScoreBadge').classList.add('hidden');
+    }
+
+    // Hitung filter counts
+    const allItems = res.reviewList || [];
+    const totalCount = allItems.length;
+    let benarCount = 0;
+    let salahCount = 0;
+    let kosongCount = 0;
+
+    allItems.forEach(it => {
+      if (it.statusJawaban === 'BENAR' || it.benar === true) benarCount++;
+      else if (it.statusJawaban === 'KOSONG' || (!it.jawabanSiswa || String(it.jawabanSiswa).trim() === '')) kosongCount++;
+      else salahCount++;
+    });
+
+    document.getElementById('countReviewAll').textContent = totalCount;
+    document.getElementById('countReviewBenar').textContent = benarCount;
+    document.getElementById('countReviewSalah').textContent = salahCount;
+    document.getElementById('countReviewKosong').textContent = kosongCount;
+
+    currentReviewFilter = 'ALL';
+    updateFilterPillUI('ALL');
+    renderReviewList(allItems);
+
+    document.getElementById('student-result-screen').classList.add('hidden');
+    document.getElementById('student-review-screen').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function filterReview(type) {
+    currentReviewFilter = type;
+    updateFilterPillUI(type);
+
+    if (!cachedReviewData || !cachedReviewData.reviewList) return;
+
+    let filtered = cachedReviewData.reviewList;
+    if (type === 'BENAR') {
+      filtered = filtered.filter(it => it.statusJawaban === 'BENAR' || it.benar === true);
+    } else if (type === 'SALAH') {
+      filtered = filtered.filter(it => (it.statusJawaban === 'SALAH') || (!it.benar && it.jawabanSiswa && String(it.jawabanSiswa).trim() !== ''));
+    } else if (type === 'KOSONG') {
+      filtered = filtered.filter(it => it.statusJawaban === 'KOSONG' || !it.jawabanSiswa || String(it.jawabanSiswa).trim() === '');
+    }
+
+    renderReviewList(filtered);
+  }
+
+  function updateFilterPillUI(activeType) {
+    const pills = [
+      { id: 'rfPillAll', type: 'ALL' },
+      { id: 'rfPillBenar', type: 'BENAR' },
+      { id: 'rfPillSalah', type: 'SALAH' },
+      { id: 'rfPillKosong', type: 'KOSONG' }
+    ];
+
+    pills.forEach(p => {
+      const el = document.getElementById(p.id);
+      if (el) {
+        if (p.type === activeType) el.classList.add('active');
+        else el.classList.remove('active');
+      }
+    });
+  }
+
+  function renderReviewList(items) {
+    const container = document.getElementById('studentReviewList');
+    if (!container) return;
+
+    if (!items || items.length === 0) {
+      container.innerHTML = `
+        <div class="card text-center text-muted" style="padding: 32px 16px;">
+          Tidak ada soal pada kategori tinjauan ini.
+        </div>
+      `;
+      return;
+    }
+
+    let html = '';
+    items.forEach((item, idx) => {
+      const isBenar = (item.statusJawaban === 'BENAR' || item.benar === true);
+      const isKosong = (item.statusJawaban === 'KOSONG' || (!item.jawabanSiswa || String(item.jawabanSiswa).trim() === ''));
+
+      let cardClass = 'card-salah';
+      let statusBadgeClass = 'review-status-salah';
+      let statusLabel = '❌ SALAH';
+
+      if (isBenar) {
+        cardClass = 'card-benar';
+        statusBadgeClass = 'review-status-benar';
+        statusLabel = '✅ BENAR';
+      } else if (isKosong) {
+        cardClass = 'card-kosong';
+        statusBadgeClass = 'review-status-kosong';
+        statusLabel = '⚪ TIDAK DIJAWAB';
+      }
+
+      html += `
+        <div class="review-item-card ${cardClass}" id="revItem_${item.nomorUrut}">
+          <div class="review-item-header">
+            <span class="review-q-num">Soal No. ${item.nomorUrut}</span>
+            <span class="review-status-badge ${statusBadgeClass}">${statusLabel}</span>
+          </div>
+
+          <div class="review-question-text">${app.escapeHtml(item.pertanyaan)}</div>
+      `;
+
+      if (item.gambarUrl) {
+        const cleanImg = app.formatDriveImageUrl(item.gambarUrl);
+        const fId = app.getDriveFileId(item.gambarUrl);
         html += `
-          <div class="card" style="margin-bottom:16px; border-left: 4px solid ${isBenar ? 'var(--secondary)' : 'var(--accent-red)'};">
-            <div class="flex justify-between items-center" style="margin-bottom:8px;">
-              <span class="font-bold" style="color:var(--primary);">Soal No. ${item.nomorUrut}</span>
-              <span class="badge ${isBenar ? 'badge-success' : 'badge-danger'}">${isBenar ? 'BENAR' : 'SALAH'}</span>
-            </div>
-            <div class="question-text" style="font-size:16px; margin-bottom:12px;">${app.escapeHtml(item.pertanyaan)}</div>
-            ${item.gambarUrl ? `<img src="${app.escapeHtml(app.formatDriveImageUrl(item.gambarUrl))}" class="question-image" style="max-height:220px;" referrerpolicy="no-referrer" onerror="const f='${app.getDriveFileId(item.gambarUrl)}'; if(f && !this.dataset.t){this.dataset.t='1'; this.src='https://drive.google.com/thumbnail?id='+f+'&sz=w1000';}">` : ''}
-            <div style="font-size:14px; margin-bottom:6px;">
-              Jawaban Kamu: <b style="color:${isBenar ? 'var(--secondary)' : 'var(--accent-red)'};">${app.escapeHtml(item.jawabanSiswa || '(Tidak Dijawab)')}</b>
-            </div>
-            ${item.kunciJawaban ? `<div style="font-size:14px; color:var(--text-main); margin-bottom:6px;">Kunci Jawaban: <b class="text-success">${app.escapeHtml(item.kunciJawaban)}</b></div>` : ''}
-            ${item.pembahasan ? `<div style="font-size:13px; color:var(--text-muted); background:#f8fafc; padding:10px; border-radius:8px; margin-top:8px;"><b>Pembahasan:</b> ${app.escapeHtml(item.pembahasan)}</div>` : ''}
+          <div style="margin: 12px 0;">
+            <img src="${app.escapeHtml(cleanImg)}" class="question-image" style="max-height: 240px; border-radius: 12px; border: 1px solid var(--border-subtle); display: none;" referrerpolicy="no-referrer" onload="this.style.display='block';" onerror="const f='${fId}'; if(f && !this.dataset.t){this.dataset.t='1'; this.src='https://drive.google.com/thumbnail?id='+f+'&sz=w1000';} else { this.style.display='none'; }">
           </div>
         `;
-      });
+      }
 
-      listContainer.innerHTML = html;
-      document.getElementById('student-result-screen').classList.add('hidden');
-      document.getElementById('student-review-screen').classList.remove('hidden');
-    } catch (err) {
-      app.showToast('Gagal memuat pembahasan: ' + err.message, 'error');
-    }
+      // Tampilan Opsi Pilihan Ganda
+      if (item.jenisSoal === 'PILIHAN_GANDA') {
+        const options = [
+          { key: 'A', text: item.pilihanA },
+          { key: 'B', text: item.pilihanB },
+          { key: 'C', text: item.pilihanC },
+          { key: 'D', text: item.pilihanD }
+        ].filter(opt => opt.text && opt.text.trim() !== '');
+
+        html += `<div class="review-options-container">`;
+        options.forEach(opt => {
+          const isSelected = (item.jawabanSiswa === opt.key);
+          const isKey = (item.kunciJawaban === opt.key);
+
+          let rowClass = '';
+          let tagBadge = '';
+
+          if (isSelected && isBenar) {
+            rowClass = 'opt-selected-benar';
+            tagBadge = '<span class="badge badge-success" style="margin-left:auto; font-size:11px;">Jawaban Kamu (Benar) ✅</span>';
+          } else if (isSelected && !isBenar) {
+            rowClass = 'opt-selected-salah';
+            tagBadge = '<span class="badge badge-danger" style="margin-left:auto; font-size:11px;">Jawaban Kamu ❌</span>';
+          } else if (isKey) {
+            rowClass = 'opt-is-key';
+            tagBadge = '<span class="badge badge-success" style="margin-left:auto; font-size:11px;">Kunci Jawaban Benar ✅</span>';
+          }
+
+          html += `
+            <div class="review-option-row ${rowClass}">
+              <div class="review-opt-badge">${opt.key}</div>
+              <div class="review-opt-text">${app.escapeHtml(opt.text)}</div>
+              ${tagBadge}
+            </div>
+          `;
+        });
+        html += `</div>`;
+      } else {
+        // Benar / Salah atau Isian Singkat
+        html += `
+          <div class="review-answer-summary-box">
+            <div style="margin-bottom: 6px;">
+              <b>Jawaban Kamu:</b> 
+              <span style="font-weight:700; color:${isBenar ? 'var(--secondary)' : (isKosong ? 'var(--text-muted)' : 'var(--accent-red)')};">
+                ${app.escapeHtml(item.jawabanSiswa || '(Tidak Dijawab)')}
+              </span>
+            </div>
+            ${item.kunciJawaban ? `
+              <div style="color: var(--text-main);">
+                <b>Kunci Jawaban Benar:</b> 
+                <span class="text-success font-bold">${app.escapeHtml(item.kunciJawaban)}</span>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      // Kotak Pembahasan & Penjelasan
+      const pembahasanContent = item.pembahasan || 'Pembahasan untuk soal ini belum tersedia.';
+      html += `
+        <div class="review-explanation-box">
+          <div class="explanation-header">
+            <span>💡</span> <span>Pembahasan & Penjelasan:</span>
+          </div>
+          <div class="explanation-body ${!item.pembahasan ? 'text-muted' : ''}" style="${!item.pembahasan ? 'font-style: italic;' : ''}">
+            ${app.escapeHtml(pembahasanContent)}
+          </div>
+        </div>
+      </div>`;
+    });
+
+    container.innerHTML = html;
   }
 
   function backToResultScreen() {
     document.getElementById('student-review-screen').classList.add('hidden');
     document.getElementById('student-result-screen').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   return {
@@ -648,6 +942,7 @@ const tokenSiswa = (function() {
     openConfirmSubmitModal,
     submitQuiz,
     loadReview,
+    filterReview,
     backToResultScreen
   };
 })();

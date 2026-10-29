@@ -10,16 +10,19 @@
 const hasilRekap = (function() {
   'use strict';
 
-  async function load() {
+  let cachedHasilData = null;
+
+  async function load(forceRefresh = false) {
     const tbody = document.getElementById('hasilTableBody');
-    if (tbody) {
+    if (tbody && (!cachedHasilData || forceRefresh)) {
       tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Memuat rekap hasil siswa...</td></tr>';
     }
 
     try {
-      const res = await api.getHasilList({});
+      const res = await api.getHasilList({}, forceRefresh);
       if (!res || !res.success) throw new Error(res.message || 'Gagal memuat rekap');
 
+      cachedHasilData = res.data;
       const d = res.data;
       document.getElementById('rekapTotalPeserta').textContent = d.stats.totalPeserta || 0;
       document.getElementById('rekapRataRata').textContent = d.stats.rataRata || 0;

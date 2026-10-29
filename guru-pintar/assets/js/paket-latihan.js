@@ -12,14 +12,14 @@ const paketLatihan = (function() {
 
   let cachedPaketList = [];
 
-  async function load() {
+  async function load(forceRefresh = false) {
     const tbody = document.getElementById('paketTableBody');
-    if (tbody) {
+    if (tbody && (cachedPaketList.length === 0 || forceRefresh)) {
       tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Memuat paket latihan...</td></tr>';
     }
 
     try {
-      const res = await api.getPaketLatihan();
+      const res = await api.getPaketLatihan(forceRefresh);
       cachedPaketList = res.data || [];
 
       if (!tbody) return;
@@ -71,8 +71,8 @@ const paketLatihan = (function() {
     document.getElementById('paketAcakSoal').checked = false;
     document.getElementById('paketAcakPilihan').checked = false;
     document.getElementById('paketTampilkanNilai').checked = true;
-    document.getElementById('paketTampilkanKunci').checked = false;
-    document.getElementById('paketTampilkanPembahasan').checked = false;
+    document.getElementById('paketTampilkanKunci').checked = true;
+    document.getElementById('paketTampilkanPembahasan').checked = true;
     document.getElementById('modalPaketTitle').textContent = 'Buat Paket Latihan Baru';
 
     loadBankSoalForPicker([]);

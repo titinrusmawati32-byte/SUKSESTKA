@@ -553,11 +553,11 @@ function savePaketLatihan(sessionToken, paketData, selectedSoal) {
       AcakSoal: paketData.AcakSoal === true || paketData.AcakSoal === 'TRUE',
       AcakPilihan: paketData.AcakPilihan === true || paketData.AcakPilihan === 'TRUE',
       TampilkanNilai: paketData.TampilkanNilai !== undefined ? Boolean(paketData.TampilkanNilai) : true,
-      TampilkanKunci: paketData.TampilkanKunci !== undefined ? Boolean(paketData.TampilkanKunci) : false,
-      TampilkanPembahasan: paketData.TampilkanPembahasan !== undefined ? Boolean(paketData.TampilkanPembahasan) : false,
+      TampilkanKunci: paketData.TampilkanKunci !== undefined ? Boolean(paketData.TampilkanKunci) : true,
+      TampilkanPembahasan: paketData.TampilkanPembahasan !== undefined ? Boolean(paketData.TampilkanPembahasan) : true,
       MulaiPada: paketData.MulaiPada || '',
       SelesaiPada: paketData.SelesaiPada || '',
-      Status: paketData.Status || 'DRAF',
+      Status: paketData.Status || 'TERBIT',
       DiperbaruiPada: now
     };
 
@@ -575,17 +575,14 @@ function savePaketLatihan(sessionToken, paketData, selectedSoal) {
       appendRow(SHEETS.PAKET_LATIHAN, record);
     }
 
-    // Perbarui PAKET_SOAL jika disertakan
+    // Perbarui PAKET_SOAL jika disertakan (Batch Delete + Batch Append dalam hitungan milidetik)
     if (selectedSoal && Array.isArray(selectedSoal)) {
-      // Hapus relasi lama untuk paket ini
-      var currentPsRows = getAllRows(SHEETS.PAKET_SOAL);
-      for (var i = currentPsRows.length - 1; i >= 0; i--) {
-        if (currentPsRows[i].PaketID === paketId) {
-          deleteRow(SHEETS.PAKET_SOAL, 'PaketSoalID', currentPsRows[i].PaketSoalID);
-        }
-      }
+      // Hapus relasi lama untuk paket ini secara batch (1 pass, tanpa deleteRow loop)
+      deleteRowsBatchByCondition(SHEETS.PAKET_SOAL, function(row) {
+        return String(row.PaketID) === String(paketId);
+      });
 
-      // Masukkan relasi baru
+      // Masukkan relasi baru secara batch
       var newPsRows = [];
       for (var j = 0; j < selectedSoal.length; j++) {
         var s = selectedSoal[j];
@@ -677,6 +674,17 @@ function createPaketToken(sessionToken, tokenData) {
     var hashObj = hashPassword(rawCode, 'TOKEN_SALT');
     var tokenId = generateId('TOK');
     var now = getJakartaTimestamp();
+
+    // Otomatis terbitkan paket latihan jika masih DRAF agar siswa langsung dapat mengerjakan
+    try {
+      var allPaket = getAllRows(SHEETS.PAKET_LATIHAN);
+      var paketTarget = allPaket.find(function(p) { return String(p.PaketID).trim() === String(tokenData.PaketID).trim(); });
+      if (paketTarget && String(paketTarget.Status).toUpperCase() !== 'TERBIT' && String(paketTarget.Status).toUpperCase() !== 'TUTUP') {
+        updateRow(SHEETS.PAKET_LATIHAN, 'PaketID', tokenData.PaketID, { Status: 'TERBIT', DiperbaruiPada: now });
+      }
+    } catch (eAutoPub) {
+      Logger.log('Auto-publish paket warning: ' + eAutoPub.message);
+    }
 
     var record = {
       TokenID: tokenId,

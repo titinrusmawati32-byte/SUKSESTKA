@@ -67,8 +67,19 @@ function validateStudentToken(tokenString) {
   }
 
   var paketStatus = String(paket.Status || '').trim().toUpperCase();
-  if (paketStatus !== 'TERBIT') {
-    throw new Error('Latihan ini belum dibuka atau sedang ditutup oleh guru (Status paket saat ini: ' + (paket.Status || 'DRAFT') + '). Mohon hubungi bapak/ibu guru.');
+  // Hanya tolak jika status latihan secara eksplisit ditutup atau diarsipkan
+  if (paketStatus === 'TUTUP' || paketStatus === 'ARSIP') {
+    throw new Error('Latihan ini sedang ditutup atau diarsipkan oleh bapak/ibu guru. Mohon hubungi guru Anda.');
+  }
+
+  // Jika paket masih DRAF / DRAFT namun token aktif telah dibuat oleh guru, otomatis terbitkan
+  if (paketStatus === 'DRAF' || paketStatus === 'DRAFT' || paketStatus === '') {
+    try {
+      updateRow(SHEETS.PAKET_LATIHAN, 'PaketID', paket.PaketID, { Status: 'TERBIT' });
+      paket.Status = 'TERBIT';
+    } catch (eAutoPub) {
+      Logger.log('Auto-publish paket warning: ' + eAutoPub.message);
+    }
   }
 
   // Cek jadwal mulai dan selesai paket
@@ -391,8 +402,11 @@ function buildSessionPayload(sesiObj, paketMeta, isResume) {
 function saveStudentAnswer(sesiId, soalId, jawaban) {
   if (!sesiId || !soalId) throw new Error('Parameter sesi dan soal wajib ada.');
 
+  var cleanSesiId = String(sesiId).trim();
+  var cleanSoalId = String(soalId).trim();
+
   return withScriptLock(function() {
-    var sesi = getAllRows(SHEETS.SESI_LATIHAN).find(function(s) { return s.SesiID === sesiId; });
+    var sesi = getAllRows(SHEETS.SESI_LATIHAN).find(function(s) { return String(s.SesiID).trim() === cleanSesiId; });
     if (!sesi) throw new Error('Sesi pengerjaan tidak ditemukan.');
 
     if (sesi.Status !== 'SEDANG_MENGERJAKAN') {
@@ -404,36 +418,43 @@ function saveStudentAnswer(sesiId, soalId, jawaban) {
     if (sesi.BatasWaktu) {
       var deadline = (sesi.BatasWaktu instanceof Date) ? sesi.BatasWaktu : new Date(sesi.BatasWaktu);
       if (!isNaN(deadline.getTime()) && now > deadline) {
-        autoSubmitSessionOnTimeout(sesiId);
+        autoSubmitSessionOnTimeout(cleanSesiId);
         return { expired: true, message: 'Waktu pengerjaan telah habis. Jawaban telah otomatis dikumpulkan.' };
       }
     }
 
     var nowJakarta = getJakartaTimestamp();
-    var allJw = getAllRows(SHEETS.JAWABAN_SISWA);
-    var existing = allJw.find(function(j) { return j.SesiID === sesiId && j.SoalID === soalId; });
+    var cleanJawaban = String(jawaban !== null && jawaban !== undefined ? jawaban : '');
+    var newJwId = generateId('ANS');
 
-    if (existing) {
-      updateRow(SHEETS.JAWABAN_SISWA, 'JawabanID', existing.JawabanID, {
-        Jawaban: String(jawaban !== null && jawaban !== undefined ? jawaban : ''),
+    // 1-Pass Find & Update/Append: Menggantikan 2 full table scans
+    findAndUpdateOrAppendRow(
+      SHEETS.JAWABAN_SISWA,
+      function(row) {
+        return String(row.SesiID).trim() === cleanSesiId && String(row.SoalID).trim() === cleanSoalId;
+      },
+      {
+        Jawaban: cleanJawaban,
         DiperbaruiPada: nowJakarta
-      });
-    } else {
-      var newJwId = generateId('ANS');
-      appendRow(SHEETS.JAWABAN_SISWA, {
+      },
+      {
         JawabanID: newJwId,
-        SesiID: sesiId,
-        SoalID: soalId,
-        Jawaban: String(jawaban !== null && jawaban !== undefined ? jawaban : ''),
+        SesiID: cleanSesiId,
+        SoalID: cleanSoalId,
+        Jawaban: cleanJawaban,
         Skor: 0,
         Benar: false,
         DiperbaruiPada: nowJakarta
-      });
-    }
+      }
+    );
 
-    updateRow(SHEETS.SESI_LATIHAN, 'SesiID', sesiId, {
-      TerakhirAktif: nowJakarta
-    });
+    try {
+      updateRow(SHEETS.SESI_LATIHAN, 'SesiID', cleanSesiId, {
+        TerakhirAktif: nowJakarta
+      });
+    } catch (eUpd) {
+      Logger.log('Update TerakhirAktif warning: ' + eUpd.message);
+    }
 
     return { success: true, savedAt: nowJakarta };
   });
@@ -492,6 +513,9 @@ function submitStudentQuiz(sesiId) {
     var totalSalah = 0;
     var totalKosong = 0;
 
+    var jwUpdatesMap = {};
+    var newBlankRows = [];
+
     for (var i = 0; i < paketSoalRows.length; i++) {
       var ps = paketSoalRows[i];
       var soal = bankMap[ps.SoalID];
@@ -514,12 +538,10 @@ function submitStudentQuiz(sesiId) {
         var jenis = soal.JenisSoal || 'PILIHAN_GANDA';
 
         if (jenis === 'PILIHAN_GANDA') {
-          // Pencocokan pilihan A, B, C, D (case-insensitive)
           if (cleanStudentAns.toUpperCase() === rawKey.toUpperCase()) {
             isBenar = true;
           }
         } else if (jenis === 'BENAR_SALAH') {
-          // Normalisasi Benar / Salah / B / S / True / False
           var normStudent = cleanStudentAns.toUpperCase();
           var normKey = rawKey.toUpperCase();
           var isStudentTrue = (normStudent === 'BENAR' || normStudent === 'B' || normStudent === 'TRUE');
@@ -528,8 +550,6 @@ function submitStudentQuiz(sesiId) {
             isBenar = true;
           }
         } else if (jenis === 'ISIAN_SINGKAT') {
-          // Normalisasi spasi dan huruf kecil
-          // Mendukung alternatif kunci jawaban yang dipisahkan titik-koma (;) atau koma (,)
           var studentNorm = normalizeAnswerString(cleanStudentAns);
           var keys = rawKey.split(/[;,]/).map(function(k) { return normalizeAnswerString(k); });
 
@@ -550,18 +570,16 @@ function submitStudentQuiz(sesiId) {
         }
       }
 
-      // Perbarui skor di baris JAWABAN_SISWA
+      // Kumpulkan ke map untuk pembaruan batch (menghindari loop updateRow yang lambat)
       if (jwObj) {
-        updateRow(SHEETS.JAWABAN_SISWA, 'JawabanID', jwObj.JawabanID, {
+        jwUpdatesMap[String(jwObj.JawabanID)] = {
           Skor: skorSoal,
           Benar: isBenar,
           DiperbaruiPada: nowJakarta
-        });
+        };
       } else {
-        // Buat baris kosong jika siswa tidak menjawab sama sekali
-        var newBlankId = generateId('ANS');
-        appendRow(SHEETS.JAWABAN_SISWA, {
-          JawabanID: newBlankId,
+        newBlankRows.push({
+          JawabanID: generateId('ANS'),
           SesiID: sesiId,
           SoalID: soal.SoalID,
           Jawaban: '',
@@ -570,6 +588,14 @@ function submitStudentQuiz(sesiId) {
           DiperbaruiPada: nowJakarta
         });
       }
+    }
+
+    // 1 Batch Update & 1 Batch Append untuk seluruh lembar jawaban
+    if (Object.keys(jwUpdatesMap).length > 0) {
+      updateRowsBatch(SHEETS.JAWABAN_SISWA, 'JawabanID', jwUpdatesMap);
+    }
+    if (newBlankRows.length > 0) {
+      appendRowsBatch(SHEETS.JAWABAN_SISWA, newBlankRows);
     }
 
     // Hitung Nilai Akhir (Skala 0 - 100)
@@ -611,46 +637,68 @@ function autoSubmitSessionOnTimeout(sesiId) {
  */
 function getStudentResultSummary(sesi, totalBenar, totalSalah, totalKosong, totalSoal) {
   var paket = getAllRows(SHEETS.PAKET_LATIHAN).find(function(p) { return p.PaketID === sesi.PaketID; });
-  var tampilkanNilai = paket ? (paket.TampilkanNilai === true || String(paket.TampilkanNilai).toUpperCase() === 'TRUE') : true;
-  var tampilkanKunci = paket ? (paket.TampilkanKunci === true || String(paket.TampilkanKunci).toUpperCase() === 'TRUE') : false;
-  var tampilkanPembahasan = paket ? (paket.TampilkanPembahasan === true || String(paket.TampilkanPembahasan).toUpperCase() === 'TRUE') : false;
+  var tampilkanNilai = paket ? (paket.TampilkanNilai !== false && String(paket.TampilkanNilai).toUpperCase() !== 'FALSE') : true;
+
+  // Jika total belum dihitung (misal saat submit berulang / akses kembali), hitung dari JAWABAN_SISWA
+  if (totalBenar === undefined || totalSoal === undefined) {
+    var jwList = getAllRows(SHEETS.JAWABAN_SISWA).filter(function(j) { return j.SesiID === sesi.SesiID; });
+    totalSoal = jwList.length;
+    totalBenar = 0;
+    totalSalah = 0;
+    totalKosong = 0;
+
+    for (var i = 0; i < jwList.length; i++) {
+      var j = jwList[i];
+      var isKosong = (!j.Jawaban || String(j.Jawaban).trim() === '');
+      var isB = (j.Benar === true || String(j.Benar).toUpperCase() === 'TRUE');
+      if (isKosong) totalKosong++;
+      else if (isB) totalBenar++;
+      else totalSalah++;
+    }
+  }
+
+  var persentaseBenar = totalSoal > 0 ? Math.round((totalBenar / totalSoal) * 100) : 0;
 
   return {
     success: true,
     sesiId: sesi.SesiID,
     namaSiswa: sesi.NamaSiswaSnapshot,
     judulPaket: paket ? paket.Judul : 'Latihan Soal',
+    mataPelajaran: paket ? paket.MataPelajaran : 'Umum',
+    tingkat: paket ? ('Kelas ' + paket.Tingkat) : '',
+    kelas: sesi.KelasIDSnapshot || (paket ? 'Kelas ' + paket.Tingkat : '-'),
+    tanggalWaktu: sesi.DikirimPada || sesi.MulaiPada || getJakartaTimestamp(),
     tampilkanNilai: tampilkanNilai,
     nilaiAkhir: tampilkanNilai ? sesi.NilaiAkhir : null,
-    totalBenar: totalBenar !== undefined ? totalBenar : null,
-    totalSalah: totalSalah !== undefined ? totalSalah : null,
-    totalKosong: totalKosong !== undefined ? totalKosong : null,
-    totalSoal: totalSoal !== undefined ? totalSoal : null,
-    canReview: (tampilkanKunci || tampilkanPembahasan),
+    totalBenar: totalBenar,
+    totalSalah: totalSalah,
+    totalKosong: totalKosong,
+    totalSoal: totalSoal,
+    persentaseBenar: persentaseBenar,
+    canReview: true,
+    tampilkanKunci: true,
+    tampilkanPembahasan: true,
     message: 'Latihan berhasil dikumpulkan!'
   };
 }
 
 /**
- * Mengambil pembahasan / review jawaban siswa (HANYA JIKA DIIZINKAN OLEH GURU)
+ * Mengambil pembahasan / review jawaban siswa
+ * Sesuai panduan arsitektur: Default selalu mengizinkan siswa melihat pembahasan setelah latihan selesai
  * @param {string} sesiId ID Sesi Pengerjaan
  * @return {Object} Detail review
  */
 function getStudentReview(sesiId) {
   var sesi = getAllRows(SHEETS.SESI_LATIHAN).find(function(s) { return s.SesiID === sesiId; });
   if (!sesi || sesi.Status !== 'SELESAI') {
-    throw new Error('Sesi belum selesai atau tidak ditemukan.');
+    throw new Error('Pembahasan hanya dapat dilihat setelah latihan selesai dikumpulkan.');
   }
 
   var paket = getAllRows(SHEETS.PAKET_LATIHAN).find(function(p) { return p.PaketID === sesi.PaketID; });
-  if (!paket) throw new Error('Paket tidak ditemukan.');
+  if (!paket) throw new Error('Paket latihan tidak ditemukan.');
 
-  var tampilkanKunci = (paket.TampilkanKunci === true || String(paket.TampilkanKunci).toUpperCase() === 'TRUE');
-  var tampilkanPembahasan = (paket.TampilkanPembahasan === true || String(paket.TampilkanPembahasan).toUpperCase() === 'TRUE');
-
-  if (!tampilkanKunci && !tampilkanPembahasan) {
-    throw new Error('Guru tidak mengizinkan tampilan kunci jawaban atau pembahasan untuk latihan ini.');
-  }
+  var tampilkanKunci = true;
+  var tampilkanPembahasan = true;
 
   var paketSoalRows = getAllRows(SHEETS.PAKET_SOAL).filter(function(ps) { return ps.PaketID === sesi.PaketID; });
   paketSoalRows.sort(function(a, b) { return (Number(a.Urutan) || 0) - (Number(b.Urutan) || 0); });
@@ -668,43 +716,79 @@ function getStudentReview(sesiId) {
   }
 
   var reviewList = [];
+  var totalBenar = 0;
+  var totalSalah = 0;
+  var totalKosong = 0;
+
   for (var i = 0; i < paketSoalRows.length; i++) {
     var ps = paketSoalRows[i];
     var so = bankMap[ps.SoalID];
     if (!so) continue;
 
     var jw = jwMap[so.SoalID];
-    var studentAnswer = jw ? jw.Jawaban : '';
+    var studentAnswer = jw ? String(jw.Jawaban || '').trim() : '';
+    var isKosong = (studentAnswer === '');
     var isBenar = jw ? (jw.Benar === true || String(jw.Benar).toUpperCase() === 'TRUE') : false;
+
+    var statusJawaban = 'KOSONG';
+    if (isKosong) {
+      statusJawaban = 'KOSONG';
+      totalKosong++;
+    } else if (isBenar) {
+      statusJawaban = 'BENAR';
+      totalBenar++;
+    } else {
+      statusJawaban = 'SALAH';
+      totalSalah++;
+    }
+
+    var pembahasanText = String(so.Pembahasan || '').trim();
+    if (!pembahasanText) {
+      pembahasanText = 'Pembahasan untuk soal ini belum tersedia.';
+    }
 
     var item = {
       nomorUrut: i + 1,
+      soalId: so.SoalID,
       pertanyaan: so.Pertanyaan,
       gambarUrl: normalizeDriveImageUrl(so.GambarURL, so.GambarFileID),
       jenisSoal: so.JenisSoal,
       jawabanSiswa: studentAnswer,
+      statusJawaban: statusJawaban,
       benar: isBenar,
       pilihanA: so.PilihanA,
       pilihanB: so.PilihanB,
       pilihanC: so.PilihanC,
-      pilihanD: so.PilihanD
+      pilihanD: so.PilihanD,
+      bobot: Number(ps.BobotOverride) || Number(so.Bobot) || 1
     };
 
     if (tampilkanKunci) {
-      item.kunciJawaban = so.KunciJawaban;
+      item.kunciJawaban = so.KunciJawaban || '';
     }
     if (tampilkanPembahasan) {
-      item.pembahasan = so.Pembahasan;
+      item.pembahasan = pembahasanText;
     }
 
     reviewList.push(item);
   }
 
+  var persentaseBenar = reviewList.length > 0 ? Math.round((totalBenar / reviewList.length) * 100) : 0;
+
   return {
     success: true,
+    sesiId: sesi.SesiID,
     judulPaket: paket.Judul,
+    mataPelajaran: paket.MataPelajaran,
+    tingkat: paket.Tingkat,
+    kelas: sesi.KelasIDSnapshot || (paket ? 'Kelas ' + paket.Tingkat : '-'),
     namaSiswa: sesi.NamaSiswaSnapshot,
-    nilaiAkhir: (paket.TampilkanNilai === true || String(paket.TampilkanNilai).toUpperCase() === 'TRUE') ? sesi.NilaiAkhir : null,
+    nilaiAkhir: (paket.TampilkanNilai !== false && String(paket.TampilkanNilai).toUpperCase() !== 'FALSE') ? sesi.NilaiAkhir : null,
+    totalSoal: reviewList.length,
+    totalBenar: totalBenar,
+    totalSalah: totalSalah,
+    totalKosong: totalKosong,
+    persentaseBenar: persentaseBenar,
     reviewList: reviewList
   };
 }

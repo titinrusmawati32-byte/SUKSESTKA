@@ -879,27 +879,95 @@
 
     <!-- 4. SCREEN HASIL PENGERJAAN -->
     <div id="student-result-screen" class="hidden">
-      <div class="card text-center" style="padding: 40px 24px;">
-        <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
-        <h2 style="font-size: 26px; font-weight: 800; color: var(--secondary); margin-bottom: 8px;">Latihan Berhasil Dikumpulkan!</h2>
-        <p class="text-muted" style="font-size: 15px; margin-bottom: 24px;">
-          Hebat, kamu sudah menyelesaikan seluruh soal dengan mandiri.
-        </p>
-
-        <div id="scoreDisplayCard" class="card hidden" style="max-width: 320px; margin: 0 auto 24px; background: #eff6ff; border: 2px solid var(--primary);">
-          <div style="font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 4px;">NILAI KAMU:</div>
-          <div id="studentFinalScore" style="font-size: 54px; font-weight: 900; color: var(--primary); line-height: 1;">85</div>
-          <div id="studentScoreStats" class="flex justify-center gap-3" style="margin-top: 12px; font-size: 13px; font-weight: 700;"></div>
+      <div class="result-container-card">
+        <!-- Header Perayaan -->
+        <div class="result-header text-center">
+          <div class="result-trophy-badge">🏆</div>
+          <h2 class="result-title">Hasil Latihan Kamu</h2>
+          <p class="result-subtitle" id="resultSubtitle">Hebat! Kamu telah menyelesaikan seluruh latihan.</p>
         </div>
 
-        <p id="studentNoticeText" class="text-muted" style="font-size: 14px; margin-bottom: 24px;"></p>
+        <!-- Kartu Identitas Siswa & Latihan -->
+        <div class="result-info-card">
+          <div class="result-info-grid">
+            <div class="result-info-item">
+              <span class="info-label">👤 Nama Siswa</span>
+              <span class="info-value font-bold" id="resNamaSiswa">-</span>
+            </div>
+            <div class="result-info-item">
+              <span class="info-label">📦 Paket Latihan</span>
+              <span class="info-value font-bold" id="resJudulPaket">-</span>
+            </div>
+            <div class="result-info-item">
+              <span class="info-label">📚 Mapel & Kelas</span>
+              <span class="info-value" id="resMapelKelas">-</span>
+            </div>
+            <div class="result-info-item">
+              <span class="info-label">🕒 Waktu Selesai</span>
+              <span class="info-value" id="resTanggalWaktu">-</span>
+            </div>
+          </div>
+        </div>
 
-        <div class="flex justify-center gap-3 flex-wrap">
-          <button id="btnReviewQuestions" class="btn btn-primary btn-lg hidden" onclick="tokenSiswa.loadReview()">
+        <!-- Kartu Nilai Utama (Radial / Hero Score Pill) -->
+        <div id="scoreDisplayCard" class="result-score-hero">
+          <div class="score-circle-wrap">
+            <div class="score-number" id="studentFinalScore">0</div>
+            <div class="score-label">NILAI AKHIR</div>
+          </div>
+          <div class="score-meta-badge">
+            <span class="score-percent-pill" id="studentPercentageScore">0% Benar</span>
+            <span class="score-feedback-text font-bold" id="studentScoreBadgeMessage">Terus Semangat Belajar! 🌟</span>
+          </div>
+        </div>
+
+        <p id="studentNoticeText" class="text-muted text-center hidden" style="font-size: 14px; margin: 16px 0;"></p>
+
+        <!-- 4 Kartu Statistik Hasil -->
+        <div class="result-stats-grid">
+          <div class="res-stat-card stat-card-total">
+            <div class="res-stat-icon">📝</div>
+            <div class="res-stat-val" id="resTotalSoal">0</div>
+            <div class="res-stat-lbl">Jumlah Soal</div>
+          </div>
+          <div class="res-stat-card stat-card-benar">
+            <div class="res-stat-icon">✅</div>
+            <div class="res-stat-val text-success" id="resTotalBenar">0</div>
+            <div class="res-stat-lbl">Jawaban Benar</div>
+          </div>
+          <div class="res-stat-card stat-card-salah">
+            <div class="res-stat-icon">❌</div>
+            <div class="res-stat-val text-danger" id="resTotalSalah">0</div>
+            <div class="res-stat-lbl">Jawaban Salah</div>
+          </div>
+          <div class="res-stat-card stat-card-kosong">
+            <div class="res-stat-icon">⚪</div>
+            <div class="res-stat-val text-muted" id="resTotalKosong">0</div>
+            <div class="res-stat-lbl">Tidak Dijawab</div>
+          </div>
+        </div>
+
+        <!-- Banner CTA Pembahasan Soal -->
+        <div class="result-review-cta-card" onclick="tokenSiswa.loadReview()">
+          <div class="cta-left">
+            <div class="cta-icon-bubble">📖</div>
+            <div>
+              <h4 class="cta-title">Tinjau Pembahasan & Kunci Jawaban</h4>
+              <p class="cta-desc">Lihat penjelasan setiap nomor soal dan periksa jawaban yang benar.</p>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" type="button" onclick="event.stopPropagation(); tokenSiswa.loadReview()">
+            Lihat Pembahasan ➔
+          </button>
+        </div>
+
+        <!-- Tombol Aksi Bawah -->
+        <div class="result-actions-flex">
+          <button id="btnReviewQuestions" class="btn btn-primary btn-lg btn-glow-purple" onclick="tokenSiswa.loadReview()">
             <span>📖</span> Lihat Pembahasan Soal
           </button>
           <button class="btn btn-secondary btn-lg" onclick="app.showStudentEntryScreen()">
-            <span>🏠</span> Halaman Utama
+            <span>🏠</span> Kembali ke Beranda
           </button>
         </div>
       </div>
@@ -907,14 +975,51 @@
 
     <!-- 5. SCREEN PEMBAHASAN SISWA -->
     <div id="student-review-screen" class="hidden">
-      <div class="flex justify-between items-center" style="margin-bottom: 20px;">
-        <div>
-          <h2 style="font-size: 20px; font-weight: 800;">Pembahasan Soal</h2>
-          <span class="text-muted" id="reviewSubTitle" style="font-size: 14px;"></span>
+      <!-- Header Pembahasan Sticky / Hero -->
+      <div class="review-header-card">
+        <div class="review-header-left">
+          <button class="btn btn-secondary btn-sm" onclick="tokenSiswa.backToResultScreen()">
+            <span>◀</span> Kembali ke Hasil
+          </button>
+          <div>
+            <h2 class="review-header-title">Pembahasan & Penjelasan Soal 📖</h2>
+            <div class="review-header-sub" id="reviewSubTitle">Paket Latihan • Siswa</div>
+          </div>
         </div>
-        <button class="btn btn-secondary btn-sm" onclick="tokenSiswa.backToResultScreen()">Kembali</button>
+        <div class="review-header-right">
+          <span class="badge badge-primary review-score-badge" id="reviewScoreBadge">Nilai: 0</span>
+        </div>
       </div>
-      <div id="studentReviewList"></div>
+
+      <!-- Filter Pembahasan: Semua, Benar, Salah, Kosong -->
+      <div class="review-filter-bar">
+        <span class="filter-bar-label">Filter Tinjauan:</span>
+        <button class="review-filter-pill active" id="rfPillAll" onclick="tokenSiswa.filterReview('ALL')">
+          Semua (<span id="countReviewAll">0</span>)
+        </button>
+        <button class="review-filter-pill pill-green" id="rfPillBenar" onclick="tokenSiswa.filterReview('BENAR')">
+          ✅ Benar (<span id="countReviewBenar">0</span>)
+        </button>
+        <button class="review-filter-pill pill-red" id="rfPillSalah" onclick="tokenSiswa.filterReview('SALAH')">
+          ❌ Salah (<span id="countReviewSalah">0</span>)
+        </button>
+        <button class="review-filter-pill pill-gray" id="rfPillKosong" onclick="tokenSiswa.filterReview('KOSONG')">
+          ⚪ Tidak Dijawab (<span id="countReviewKosong">0</span>)
+        </button>
+      </div>
+
+      <!-- Container Daftar Soal & Pembahasan -->
+      <div id="studentReviewList" class="review-items-container"></div>
+
+      <!-- Navigasi Bawah Pembahasan -->
+      <div class="review-bottom-actions">
+        <button class="btn btn-secondary btn-lg" onclick="tokenSiswa.backToResultScreen()">
+          <span>◀</span> Kembali ke Halaman Hasil
+        </button>
+        <button class="btn btn-primary btn-lg" onclick="app.showStudentEntryScreen()">
+          <span>🏠</span> Selesai & Kembali ke Beranda
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1346,10 +1451,10 @@
             <input type="checkbox" id="paketTampilkanNilai" checked> Siswa Bisa Lihat Nilai
           </label>
           <label class="flex items-center gap-2" style="font-size: 13px; cursor: pointer;">
-            <input type="checkbox" id="paketTampilkanKunci"> Siswa Bisa Lihat Kunci
+            <input type="checkbox" id="paketTampilkanKunci" checked> Siswa Bisa Lihat Kunci
           </label>
           <label class="flex items-center gap-2" style="font-size: 13px; cursor: pointer;">
-            <input type="checkbox" id="paketTampilkanPembahasan"> Siswa Bisa Lihat Pembahasan
+            <input type="checkbox" id="paketTampilkanPembahasan" checked> Siswa Bisa Lihat Pembahasan
           </label>
         </div>
       </div>

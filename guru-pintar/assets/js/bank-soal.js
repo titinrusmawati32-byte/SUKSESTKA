@@ -11,26 +11,24 @@ const bankSoal = (function() {
   'use strict';
 
   let cachedSoalList = [];
+  let filteredList = [];
+  let currentPage = 1;
+  const pageSize = 10;
+  let searchDebounceTimer = null;
   let stagedSoalImport = null;
   let currentImageBase64 = null;
   let currentImageName = null;
 
-  async function load() {
+  async function load(forceRefresh = false) {
     const tbody = document.getElementById('bankSoalTableBody');
-    if (tbody) {
+    if (tbody && (cachedSoalList.length === 0 || forceRefresh)) {
       tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Memuat bank soal...</td></tr>';
     }
 
-    const filters = {
-      MataPelajaran: document.getElementById('bankFilterMapel')?.value || '',
-      JenisSoal: document.getElementById('bankFilterJenis')?.value || '',
-      search: document.getElementById('bankSearch')?.value || ''
-    };
-
     try {
-      const res = await api.getBankSoal(filters);
+      const res = await api.getBankSoal({}, forceRefresh);
       cachedSoalList = res.data || [];
-      renderTable(cachedSoalList);
+      applyFilterAndRender();
     } catch (err) {
       if (tbody) {
         tbody.innerHTML = `<tr><td colspan="7" class="text-danger text-center">Gagal memuat: ${app.escapeHtml(err.message)}</td></tr>`;
@@ -40,28 +38,59 @@ const bankSoal = (function() {
   }
 
   function filter() {
-    load();
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      applyFilterAndRender();
+    }, 250);
   }
 
-  function renderTable(list) {
+  function applyFilterAndRender() {
+    const mapel = document.getElementById('bankFilterMapel')?.value || '';
+    const jenis = document.getElementById('bankFilterJenis')?.value || '';
+    const search = (document.getElementById('bankSearch')?.value || '').toLowerCase().trim();
+
+    filteredList = cachedSoalList.filter(s => {
+      if (mapel && s.MataPelajaran !== mapel) return false;
+      if (jenis && s.JenisSoal !== jenis) return false;
+      if (search) {
+        const textToSearch = ((s.Pertanyaan || '') + ' ' + (s.Topik || '') + ' ' + (s.MataPelajaran || '')).toLowerCase();
+        if (!textToSearch.includes(search)) return false;
+      }
+      return true;
+    });
+
+    currentPage = 1;
+    renderTable();
+  }
+
+  function renderTable() {
     const tbody = document.getElementById('bankSoalTableBody');
     if (!tbody) return;
 
-    if (list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Belum ada soal yang sesuai dengan filter.</td></tr>';
+    if (filteredList.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Belum ada soal yang sesuai dengan filter atau kata kunci.</td></tr>';
+      renderPagination(0, 0);
       return;
     }
 
+    const totalPages = Math.ceil(filteredList.length / pageSize);
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const startIndex = (currentPage - 1) * pageSize;
+    const pageItems = filteredList.slice(startIndex, startIndex + pageSize);
+
     let html = '';
-    list.forEach((s, idx) => {
+    pageItems.forEach((s, idx) => {
       let badgeClass = 'badge-primary';
       let jenisLabel = 'Pilihan Ganda';
       if (s.JenisSoal === 'BENAR_SALAH') { badgeClass = 'badge-warning'; jenisLabel = 'Benar/Salah'; }
       else if (s.JenisSoal === 'ISIAN_SINGKAT') { badgeClass = 'badge-secondary'; jenisLabel = 'Isian'; }
 
+      const actualIdx = startIndex + idx + 1;
       html += `
         <tr>
-          <td>${idx + 1}</td>
+          <td>${actualIdx}</td>
           <td style="max-width:300px;">
             <div class="font-bold" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${app.escapeHtml(s.Pertanyaan)}</div>
             <small class="text-muted">${app.escapeHtml(s.Topik || '-')}</small>
@@ -80,6 +109,51 @@ const bankSoal = (function() {
       `;
     });
     tbody.innerHTML = html;
+    renderPagination(filteredList.length, totalPages);
+  }
+
+  function renderPagination(totalItems, totalPages) {
+    let container = document.getElementById('bankSoalPagination');
+    if (!container) {
+      const card = document.getElementById('bankSoalTableBody')?.closest('.card');
+      if (card) {
+        container = document.createElement('div');
+        container.id = 'bankSoalPagination';
+        container.className = 'flex justify-between items-center';
+        container.style.cssText = 'margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-subtle); font-size: 13px;';
+        card.appendChild(container);
+      }
+    }
+    if (!container) return;
+
+    if (totalItems <= pageSize) {
+      container.innerHTML = `<span class="text-muted">Total: <b>${totalItems}</b> soal</span><div></div>`;
+      return;
+    }
+
+    container.innerHTML = `
+      <span class="text-muted">Menampilkan <b>${(currentPage - 1) * pageSize + 1} - ${Math.min(currentPage * pageSize, totalItems)}</b> dari <b>${totalItems}</b> soal</span>
+      <div class="flex gap-2 items-center">
+        <button class="btn btn-secondary btn-sm" ${currentPage <= 1 ? 'disabled' : ''} onclick="bankSoal.prevPage()">◀ Sebelumnya</button>
+        <span style="font-weight: 600; padding: 0 4px;">Hal ${currentPage} / ${totalPages}</span>
+        <button class="btn btn-secondary btn-sm" ${currentPage >= totalPages ? 'disabled' : ''} onclick="bankSoal.nextPage()">Berikutnya ▶</button>
+      </div>
+    `;
+  }
+
+  function prevPage() {
+    if (currentPage > 1) {
+      currentPage--;
+      renderTable();
+    }
+  }
+
+  function nextPage() {
+    const totalPages = Math.ceil(filteredList.length / pageSize);
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderTable();
+    }
   }
 
   function handleJenisSoalChange() {
@@ -404,6 +478,8 @@ const bankSoal = (function() {
     downloadTemplate,
     handleFileSelected,
     commitImport,
+    prevPage,
+    nextPage,
     getCachedList: () => cachedSoalList
   };
 })();
