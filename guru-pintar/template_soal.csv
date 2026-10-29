@@ -1,0 +1,6 @@
+MataPelajaran,Kelas,Topik,JenisSoal,Pertanyaan,PilihanA,PilihanB,PilihanC,PilihanD,KunciJawaban,Pembahasan,Bobot
+Matematika,6,Pecahan,PILIHAN_GANDA,Hasil dari 1/2 + 1/4 adalah...,1/6,2/6,3/4,4/4,C,"Samakan penyebut menjadi 4: 2/4 + 1/4 = 3/4",1
+IPA,6,Tata Surya,BENAR_SALAH,Matahari adalah pusat dari tata surya kita.,,,,BENAR,Matahari merupakan bintang pusat tata surya.,1
+Bahasa Indonesia,6,Ibukota,ISIAN_SINGKAT,Apakah nama ibukota negara Indonesia saat ini?,,,,Jakarta;DKI Jakarta,Ibukota saat ini masih DKI Jakarta.,2
+Matematika,6,Bangun Ruang,PILIHAN_GANDA,Rumus volume kubus dengan panjang rusuk s adalah...,s x s,s x s x s,4 x s,6 x s x s,B,"Volume kubus = sisi x sisi x sisi = s^3",1
+IPS,6,ASEAN,BENAR_SALAH,Indonesia adalah salah satu negara pendiri organisasi ASEAN.,,,,BENAR,Indonesia menandatangani Deklarasi Bangkok 1967.,1

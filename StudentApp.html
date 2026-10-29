@@ -1,0 +1,872 @@
+<!-- ==========================================================================
+     Aplikasi Latihan Soal SD - Student View & Logic (StudentApp.html)
+     Desain: Ramah Anak SD, Aksesibel, Tombol Besar, Tahan Refresh
+     ========================================================================== -->
+
+<div id="student-container" class="student-wrapper">
+  <!-- 1. SCREEN TOKEN & LOGIN GURU TOGGLE -->
+  <div id="student-token-screen">
+    <div class="flex justify-between items-center" style="margin-bottom: 24px;">
+      <div class="flex items-center gap-2">
+        <span style="font-size: 28px;">🌟</span>
+        <span style="font-weight: 800; font-size: 20px; color: var(--primary);">Latihan Soal SD</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="openTeacherLoginModal()">
+        <span>👨‍🏫</span> Masuk sebagai Guru
+      </button>
+    </div>
+
+    <div class="card text-center" style="padding: 40px 24px;">
+      <div style="font-size: 64px; margin-bottom: 16px;">✏️</div>
+      <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 8px; color: var(--text-main);">Halo, Siswa Hebat!</h2>
+      <p class="text-muted" style="font-size: 16px; margin-bottom: 28px;">
+        Masukkan kode token latihan yang diberikan oleh bapak/ibu guru untuk mulai belajar:
+      </p>
+
+      <div style="max-width: 380px; margin: 0 auto;">
+        <input type="text" id="inputStudentToken" class="form-control text-center"
+               placeholder="KODE TOKEN"
+               style="font-size: 24px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; padding: 16px; margin-bottom: 16px; border: 3px solid var(--border-focus);"
+               maxlength="20">
+        <button class="btn btn-primary btn-lg" style="width: 100%;" onclick="handleValidateToken()">
+          <span>🚀</span> Mulai Latihan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. SCREEN INFORMASI & IDENTITAS SISWA -->
+  <div id="student-info-screen" class="hidden">
+    <div class="card" style="padding: 32px 24px;">
+      <div class="flex items-center gap-3" style="margin-bottom: 20px;">
+        <span style="font-size: 36px;">📋</span>
+        <div>
+          <h2 id="infoQuizTitle" style="font-size: 22px; font-weight: 800;">Judul Latihan</h2>
+          <span class="badge badge-primary" id="infoQuizMapel">Matematika - Kelas 6</span>
+        </div>
+      </div>
+
+      <div class="card" style="background:#f8fafc; padding:16px; margin-bottom:20px; border:1px solid var(--border);">
+        <h4 style="font-size:14px; font-weight:700; margin-bottom:6px;">Petunjuk Latihan:</h4>
+        <p id="infoQuizPetunjuk" style="font-size:14px; color:var(--text-muted);"></p>
+        <div class="flex gap-4" style="margin-top:12px; font-size:13px; font-weight:600;">
+          <div>⏱️ Durasi: <span id="infoQuizDurasi" class="text-primary">-</span></div>
+          <div>🔄 Kesempatan: <span id="infoQuizPercobaan" class="text-primary">-</span></div>
+        </div>
+      </div>
+
+      <div style="max-width: 480px; margin: 0 auto; text-align: left;">
+        <div id="containerRosterSelect" class="form-group hidden">
+          <label class="form-label" style="font-size: 16px;">Pilih Nama Kamu dari Daftar:</label>
+          <select id="selectRosterNama" class="form-control" style="font-size: 16px; padding: 12px;" onchange="handleRosterSelectChange()">
+            <option value="">-- Pilih Nama Siswa --</option>
+          </select>
+        </div>
+
+        <div id="containerManualName" class="form-group">
+          <label class="form-label" style="font-size: 16px;">Nama Lengkap Siswa: <span class="text-danger">*</span></label>
+          <input type="text" id="inputStudentName" class="form-control" placeholder="Tuliskan nama lengkap kamu..." style="font-size: 16px;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Kelas:</label>
+          <input type="text" id="inputStudentKelas" class="form-control" placeholder="Contoh: 6A" style="font-size: 15px;">
+        </div>
+
+        <div class="flex gap-3" style="margin-top: 24px;">
+          <button class="btn btn-secondary" onclick="backToTokenScreen()">Kembali</button>
+          <button class="btn btn-success btn-lg" style="flex: 1;" onclick="handleStartQuiz()">
+            <span>Kerjakan Sekarang ✍️</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. SCREEN QUIZ RUNNER (PENGERJAAN) -->
+  <div id="student-quiz-screen" class="hidden">
+    <!-- Sticky Topbar Siswa -->
+    <div class="student-topbar">
+      <div>
+        <div id="quizTopbarTitle" style="font-weight: 800; font-size: 16px; color: var(--text-main);">Latihan Soal</div>
+        <div class="autosave-status" id="quizAutosaveStatus">
+          <span>💾</span> <span id="autosaveText">Semua jawaban tersimpan</span>
+        </div>
+      </div>
+      <div id="quizTimerBadge" class="timer-badge">
+        <span>⏰</span> <span id="quizTimerText">--:--</span>
+      </div>
+    </div>
+
+    <!-- Lembar Pertanyaan Aktif -->
+    <div class="question-container">
+      <div class="question-header">
+        <span class="question-number" id="qCurrentNumber">Soal No. 1</span>
+        <button id="btnFlagQuestion" class="btn btn-secondary btn-sm" onclick="toggleFlagCurrentQuestion()">
+          <span>🏳️</span> <span id="flagBtnText">Tandai Ragu-ragu</span>
+        </button>
+      </div>
+
+      <div class="question-text" id="qQuestionText">Pertanyaan soal akan muncul di sini...</div>
+      <img id="qQuestionImage" class="question-image hidden" src="" alt="Gambar Soal">
+
+      <!-- Opsi Jawaban Pilihan Ganda -->
+      <div id="qAreaPilihanGanda" class="options-grid"></div>
+
+      <!-- Opsi Jawaban Benar / Salah -->
+      <div id="qAreaBenarSalah" class="bs-container hidden">
+        <div class="btn-bs" id="btnBsBenar" onclick="selectAnswerBenarSalah('BENAR')">BENAR</div>
+        <div class="btn-bs" id="btnBsSalah" onclick="selectAnswerBenarSalah('SALAH')">SALAH</div>
+      </div>
+
+      <!-- Opsi Jawaban Isian Singkat -->
+      <div id="qAreaIsianSingkat" class="hidden">
+        <div class="form-group" style="margin-top: 16px;">
+          <label class="form-label">Jawaban Kamu:</label>
+          <input type="text" id="inputJawabanIsian" class="form-control" style="font-size: 18px; padding: 14px;" placeholder="Ketik jawabanmu di sini..." oninput="handleIsianInput(event)">
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigasi Soal -->
+    <div class="flex justify-between items-center flex-wrap gap-3">
+      <button class="btn btn-secondary btn-lg" id="btnPrevQuestion" onclick="navigateQuestion(-1)">
+        <span>⬅️</span> Sebelumnya
+      </button>
+
+      <button class="btn btn-warning btn-lg" onclick="openConfirmSubmitModal()">
+        <span>📤 Kumpulkan Jawaban</span>
+      </button>
+
+      <button class="btn btn-primary btn-lg" id="btnNextQuestion" onclick="navigateQuestion(1)">
+        Berikutnya <span>➡️</span>
+      </button>
+    </div>
+
+    <!-- Palet Nomor Soal -->
+    <div style="margin-top: 24px;">
+      <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">Daftar Nomor Soal:</h4>
+      <div class="question-palette" id="questionPalette"></div>
+    </div>
+  </div>
+
+  <!-- 4. SCREEN HASIL PENGERJAAN -->
+  <div id="student-result-screen" class="hidden">
+    <div class="card text-center" style="padding: 40px 24px;">
+      <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
+      <h2 style="font-size: 26px; font-weight: 800; color: var(--secondary); margin-bottom: 8px;">Latihan Berhasil Dikumpulkan!</h2>
+      <p class="text-muted" style="font-size: 15px; margin-bottom: 24px;">
+        Hebat, kamu sudah menyelesaikan seluruh soal dengan mandiri.
+      </p>
+
+      <div id="scoreDisplayCard" class="card hidden" style="max-width: 320px; margin: 0 auto 24px; background: #eff6ff; border: 2px solid var(--primary);">
+        <div style="font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 4px;">NILAI KAMU:</div>
+        <div id="studentFinalScore" style="font-size: 54px; font-weight: 900; color: var(--primary); line-height: 1;">85</div>
+        <div id="studentScoreStats" class="flex justify-center gap-3" style="margin-top: 12px; font-size: 13px; font-weight: 700;"></div>
+      </div>
+
+      <p id="studentNoticeText" class="text-muted" style="font-size: 14px; margin-bottom: 24px;"></p>
+
+      <div class="flex justify-center gap-3 flex-wrap">
+        <button id="btnReviewQuestions" class="btn btn-primary btn-lg hidden" onclick="loadStudentReview()">
+          <span>📖</span> Lihat Pembahasan Soal
+        </button>
+        <button class="btn btn-secondary btn-lg" onclick="backToTokenScreen()">
+          <span>🏠</span> Halaman Utama
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. SCREEN PEMBAHASAN SISWA -->
+  <div id="student-review-screen" class="hidden">
+    <div class="flex justify-between items-center" style="margin-bottom: 20px;">
+      <div>
+        <h2 style="font-size: 20px; font-weight: 800;">Pembahasan Soal</h2>
+        <span class="text-muted" id="reviewSubTitle" style="font-size: 14px;"></span>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="backToResultScreen()">Kembali</button>
+    </div>
+    <div id="studentReviewList"></div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     MODAL-MODAL SISWA & LOGIN GURU
+     ========================================================================== -->
+
+<!-- Modal Login Guru -->
+<div id="modalTeacherLogin" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 420px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Masuk Portal Guru</h3>
+      <button class="modal-close" onclick="closeModal('modalTeacherLogin')">&times;</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <input type="text" id="tLoginUsername" class="form-control" placeholder="Username guru">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" id="tLoginPassword" class="form-control" placeholder="Password guru" onkeyup="if(event.key==='Enter') handleTeacherLoginSubmit()">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalTeacherLogin')">Batal</button>
+      <button class="btn btn-primary" id="btnSubmitLoginTeacher" onclick="handleTeacherLoginSubmit()">Masuk</button>
+    </div>
+    <div style="margin-top: 16px; text-align: center;">
+      <a href="javascript:void(0)" onclick="openFirstTeacherSetupModal()" style="font-size: 13px; color: var(--primary); text-decoration: none;">
+        Belum punya akun guru? Buat Akun Guru Pertama
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Setup Akun Guru Pertama -->
+<div id="modalFirstTeacher" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 440px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Setup Akun Guru Pertama</h3>
+      <button class="modal-close" onclick="closeModal('modalFirstTeacher')">&times;</button>
+    </div>
+    <p class="text-muted" style="font-size: 13px; margin-bottom: 16px;">
+      Buat akun administrator guru awal untuk mengelola aplikasi. Password akan disimpan secara aman menggunakan hash SHA-256 + salt.
+    </p>
+    <div class="form-group">
+      <label class="form-label">Nama Lengkap Guru</label>
+      <input type="text" id="ftNama" class="form-control" placeholder="Contoh: Budi Pratama, S.Pd">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <input type="text" id="ftUsername" class="form-control" placeholder="Minimal 3 karakter alfanumerik">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" id="ftPassword" class="form-control" placeholder="Minimal 6 karakter">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalFirstTeacher')">Batal</button>
+      <button class="btn btn-success" onclick="handleCreateFirstTeacherSubmit()">Buat Akun Guru</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Konfirmasi Pengumpulan Kuis -->
+<div id="modalConfirmSubmit" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 480px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Kumpulkan Jawaban?</h3>
+      <button class="modal-close" onclick="closeModal('modalConfirmSubmit')">&times;</button>
+    </div>
+    <div id="submitSummaryBox" style="font-size: 15px; margin-bottom: 16px;"></div>
+    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">
+      Pastikan seluruh pertanyaan telah dijawab dengan yakin. Setelah dikumpulkan, jawaban tidak dapat diubah kembali.
+    </p>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalConfirmSubmit')">Periksa Lagi</button>
+      <button class="btn btn-primary" onclick="executeQuizSubmission()">Ya, Kumpulkan Sekarang</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ==========================================================================
+     LOGIKA FRONTEND SISWA (StudentApp.html)
+     ========================================================================== */
+
+  var activeTokenString = '';
+  var activeTokenMeta = null;
+  var currentSessionData = null; // Menyimpan data sesi aktif dari server
+  var activeQuestions = [];
+  var currentQuestionIndex = 0;
+  var studentAnswers = {}; // Map: soalId -> string jawaban
+  var flaggedQuestions = {}; // Map: soalId -> boolean ragu
+  var timerInterval = null;
+  var isSubmittingQuiz = false;
+
+  // Inisialisasi saat halaman dimuat
+  window.addEventListener('load', function() {
+    // Cek apakah ada sesi guru tersimpan
+    var savedTeacherToken = sessionStorage.getItem('teacherSessionToken');
+    var savedTeacherProfile = sessionStorage.getItem('teacherProfile');
+    if (savedTeacherToken && savedTeacherProfile) {
+      try {
+        var profile = JSON.parse(savedTeacherProfile);
+        document.getElementById('student-container').classList.add('hidden');
+        initTeacherPortal(savedTeacherToken, profile);
+        return;
+      } catch (e) {
+        sessionStorage.clear();
+      }
+    }
+
+    // Cek apakah ada token yang diteruskan dari query URL (?token=XYZ)
+    var initialToken = '<?= initialToken ?>';
+    if (initialToken && initialToken.trim() !== '') {
+      document.getElementById('inputStudentToken').value = initialToken.trim().toUpperCase();
+      handleValidateToken();
+      return;
+    }
+
+    // Cek apakah ada sesi siswa aktif di localStorage untuk melanjutkan (tahan refresh)
+    var storedSesiId = localStorage.getItem('sd_active_sesi_id');
+    var storedToken = localStorage.getItem('sd_active_token');
+    var storedName = localStorage.getItem('sd_active_name');
+
+    if (storedSesiId && storedToken && storedName) {
+      resumeExistingStudentSession(storedToken, storedName);
+    }
+  });
+
+  function showStudentEntryScreen() {
+    document.getElementById('student-container').classList.remove('hidden');
+    document.getElementById('student-token-screen').classList.remove('hidden');
+    document.getElementById('student-info-screen').classList.add('hidden');
+    document.getElementById('student-quiz-screen').classList.add('hidden');
+    document.getElementById('student-result-screen').classList.add('hidden');
+    document.getElementById('student-review-screen').classList.add('hidden');
+  }
+
+  function backToTokenScreen() {
+    clearInterval(timerInterval);
+    showStudentEntryScreen();
+  }
+
+  /* --- 1. VALIDASI TOKEN --- */
+  function handleValidateToken() {
+    var token = document.getElementById('inputStudentToken').value.trim().toUpperCase();
+    if (!token) {
+      showToast('Masukkan kode token terlebih dahulu', 'warning');
+      return;
+    }
+
+    showToast('Memeriksa token...', 'info', 1500);
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (!res || !res.success) return;
+        activeTokenString = res.token;
+        activeTokenMeta = res;
+
+        // Tampilkan info paket di Screen 2
+        document.getElementById('infoQuizTitle').textContent = res.paket.judul;
+        document.getElementById('infoQuizMapel').textContent = res.paket.mataPelajaran + ' - Kelas ' + res.paket.tingkat;
+        document.getElementById('infoQuizPetunjuk').textContent = res.paket.petunjuk || 'Kerjakan dengan teliti.';
+        document.getElementById('infoQuizDurasi').textContent = res.paket.durasiMenit > 0 ? res.paket.durasiMenit + ' Menit' : 'Bebas';
+        document.getElementById('infoQuizPercobaan').textContent = res.paket.maksPercobaan + ' Kali';
+
+        if (res.kelas) {
+          document.getElementById('inputStudentKelas').value = res.kelas.namaKelas;
+          document.getElementById('inputStudentKelas').disabled = true;
+        } else {
+          document.getElementById('inputStudentKelas').value = '';
+          document.getElementById('inputStudentKelas').disabled = false;
+        }
+
+        // Tampilkan roster jika ada
+        var rosterSelect = document.getElementById('selectRosterNama');
+        if (res.studentList && res.studentList.length > 0) {
+          rosterSelect.innerHTML = '<option value="">-- Pilih Nama Kamu --</option>';
+          res.studentList.forEach(function(st) {
+            rosterSelect.innerHTML += '<option value="' + escapeHtml(st.namaSiswa) + '">' +
+              (st.nomorAbsen ? '(' + st.nomorAbsen + ') ' : '') + escapeHtml(st.namaSiswa) +
+            '</option>';
+          });
+          document.getElementById('containerRosterSelect').classList.remove('hidden');
+        } else {
+          document.getElementById('containerRosterSelect').classList.add('hidden');
+        }
+
+        document.getElementById('student-token-screen').classList.add('hidden');
+        document.getElementById('student-info-screen').classList.remove('hidden');
+      })
+      .withFailureHandler(function(err) {
+        showToast(err.message, 'error', 4000);
+      })
+      .validateStudentToken(token);
+  }
+
+  function handleRosterSelectChange() {
+    var selected = document.getElementById('selectRosterNama').value;
+    if (selected) {
+      document.getElementById('inputStudentName').value = selected;
+    }
+  }
+
+  /* --- 2. MULAI ATAU RESUME KUIS --- */
+  function handleStartQuiz() {
+    var nama = document.getElementById('inputStudentName').value.trim();
+    if (!nama) {
+      showToast('Silakan isi nama kamu terlebih dahulu', 'warning');
+      return;
+    }
+
+    var kelas = document.getElementById('inputStudentKelas').value.trim();
+    var studentData = {
+      namaSiswa: nama,
+      kelasId: kelas
+    };
+
+    showToast('Menyiapkan soal latihan...', 'info', 2000);
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (!res || !res.success) return;
+        setupAndStartQuizRunner(res, activeTokenString, nama);
+      })
+      .withFailureHandler(function(err) {
+        showToast(err.message, 'error', 4000);
+      })
+      .startOrResumeSession(activeTokenString, studentData);
+  }
+
+  function resumeExistingStudentSession(token, name) {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (!res || !res.success) return;
+        showToast('Melanjutkan sesi latihan sebelumnya...', 'info', 2000);
+        setupAndStartQuizRunner(res, token, name);
+      })
+      .withFailureHandler(function() {
+        // Hapus storage jika sesi sudah tidak bisa di-resume
+        localStorage.removeItem('sd_active_sesi_id');
+        localStorage.removeItem('sd_active_token');
+        localStorage.removeItem('sd_active_name');
+      })
+      .startOrResumeSession(token, { namaSiswa: name });
+  }
+
+  function setupAndStartQuizRunner(sessionPayload, token, studentName) {
+    currentSessionData = sessionPayload;
+    activeQuestions = sessionPayload.questions || [];
+    currentQuestionIndex = 0;
+    studentAnswers = {};
+    flaggedQuestions = {};
+
+    // Pulihkan jawaban tersimpan dari server jika resume
+    if (sessionPayload.savedAnswers) {
+      for (var sId in sessionPayload.savedAnswers) {
+        studentAnswers[sId] = sessionPayload.savedAnswers[sId].jawaban;
+      }
+    }
+
+    // Simpan ke localStorage untuk perlindungan refresh browser
+    localStorage.setItem('sd_active_sesi_id', sessionPayload.sesiId);
+    localStorage.setItem('sd_active_token', token);
+    localStorage.setItem('sd_active_name', studentName);
+
+    // Tampilkan Screen Kuis
+    document.getElementById('student-info-screen').classList.add('hidden');
+    document.getElementById('student-token-screen').classList.add('hidden');
+    document.getElementById('student-quiz-screen').classList.remove('hidden');
+
+    document.getElementById('quizTopbarTitle').textContent = sessionPayload.paket.judul;
+
+    // Setup Timer
+    setupCountdownTimer(sessionPayload.sisaDetik);
+
+    // Render Soal Pertama & Palet
+    renderQuestionPalette();
+    renderQuestion(0);
+  }
+
+  /* --- 3. COUNTDOWN TIMER & AUTOSUBMIT --- */
+  function setupCountdownTimer(remainingSeconds) {
+    clearInterval(timerInterval);
+    var timerBadge = document.getElementById('quizTimerBadge');
+    var timerText = document.getElementById('quizTimerText');
+
+    if (remainingSeconds === null || remainingSeconds === undefined || remainingSeconds <= 0 && currentSessionData.batasWaktu === '') {
+      timerBadge.style.display = 'none';
+      return;
+    }
+
+    timerBadge.style.display = 'flex';
+    var seconds = remainingSeconds;
+
+    function updateDisplay() {
+      if (seconds <= 0) {
+        clearInterval(timerInterval);
+        timerText.textContent = '00:00';
+        handleTimeExpiredAutoSubmit();
+        return;
+      }
+
+      var mins = Math.floor(seconds / 60);
+      var secs = seconds % 60;
+      timerText.textContent = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+
+      // Peringatan jika sisa < 5 menit
+      if (seconds <= 300) {
+        timerBadge.classList.add('urgent');
+      } else {
+        timerBadge.classList.remove('urgent');
+      }
+
+      seconds--;
+    }
+
+    updateDisplay();
+    timerInterval = setInterval(updateDisplay, 1000);
+  }
+
+  function handleTimeExpiredAutoSubmit() {
+    showToast('Waktu pengerjaan telah habis! Mengumpulkan jawaban...', 'warning', 4000);
+    executeQuizSubmission();
+  }
+
+  /* --- 4. RENDER SOAL & INTERAKSI --- */
+  function renderQuestion(index) {
+    if (index < 0 || index >= activeQuestions.length) return;
+    currentQuestionIndex = index;
+    var q = activeQuestions[index];
+
+    document.getElementById('qCurrentNumber').textContent = 'Soal No. ' + (index + 1) + ' dari ' + activeQuestions.length;
+    document.getElementById('qQuestionText').textContent = q.pertanyaan;
+
+    // Gambar
+    var imgEl = document.getElementById('qQuestionImage');
+    if (q.gambarUrl) {
+      imgEl.src = q.gambarUrl;
+      imgEl.classList.remove('hidden');
+    } else {
+      imgEl.classList.add('hidden');
+      imgEl.src = '';
+    }
+
+    // Status Ragu-ragu
+    var isFlagged = Boolean(flaggedQuestions[q.soalId]);
+    document.getElementById('flagBtnText').textContent = isFlagged ? 'Hapus Tanda Ragu' : 'Tandai Ragu-ragu';
+    document.getElementById('btnFlagQuestion').className = isFlagged ? 'btn btn-warning btn-sm' : 'btn btn-secondary btn-sm';
+
+    // Sembunyikan semua tipe input
+    document.getElementById('qAreaPilihanGanda').classList.add('hidden');
+    document.getElementById('qAreaBenarSalah').classList.add('hidden');
+    document.getElementById('qAreaIsianSingkat').classList.add('hidden');
+
+    var currentAns = studentAnswers[q.soalId] !== undefined ? studentAnswers[q.soalId] : '';
+
+    if (q.jenisSoal === 'PILIHAN_GANDA') {
+      var pgContainer = document.getElementById('qAreaPilihanGanda');
+      pgContainer.classList.remove('hidden');
+      var html = '';
+      (q.options || []).forEach(function(opt) {
+        var isSelected = (currentAns === opt.key);
+        html += '<div class="option-card ' + (isSelected ? 'selected' : '') + '" onclick="selectAnswerPG(\'' + opt.key + '\')">' +
+          '<div class="option-badge">' + opt.key + '</div>' +
+          '<div class="option-label">' + escapeHtml(opt.text) + '</div>' +
+        '</div>';
+      });
+      pgContainer.innerHTML = html;
+    } else if (q.jenisSoal === 'BENAR_SALAH') {
+      var bsContainer = document.getElementById('qAreaBenarSalah');
+      bsContainer.classList.remove('hidden');
+      var btnBenar = document.getElementById('btnBsBenar');
+      var btnSalah = document.getElementById('btnBsSalah');
+      btnBenar.className = 'btn-bs' + (currentAns === 'BENAR' ? ' selected-benar' : '');
+      btnSalah.className = 'btn-bs' + (currentAns === 'SALAH' ? ' selected-salah' : '');
+    } else if (q.jenisSoal === 'ISIAN_SINGKAT') {
+      var isianContainer = document.getElementById('qAreaIsianSingkat');
+      isianContainer.classList.remove('hidden');
+      document.getElementById('inputJawabanIsian').value = currentAns;
+    }
+
+    // Tombol Sebelumnya / Berikutnya
+    document.getElementById('btnPrevQuestion').disabled = (index === 0);
+    document.getElementById('btnNextQuestion').disabled = (index === activeQuestions.length - 1);
+
+    updatePaletteHighlight();
+  }
+
+  function navigateQuestion(step) {
+    var newIdx = currentQuestionIndex + step;
+    if (newIdx >= 0 && newIdx < activeQuestions.length) {
+      renderQuestion(newIdx);
+    }
+  }
+
+  function selectAnswerPG(key) {
+    var q = activeQuestions[currentQuestionIndex];
+    studentAnswers[q.soalId] = key;
+    renderQuestion(currentQuestionIndex);
+    triggerAutosave(q.soalId, key);
+  }
+
+  function selectAnswerBenarSalah(value) {
+    var q = activeQuestions[currentQuestionIndex];
+    studentAnswers[q.soalId] = value;
+    renderQuestion(currentQuestionIndex);
+    triggerAutosave(q.soalId, value);
+  }
+
+  var isianDebounceTimer = null;
+  function handleIsianInput(e) {
+    var val = e.target.value;
+    var q = activeQuestions[currentQuestionIndex];
+    studentAnswers[q.soalId] = val;
+
+    clearTimeout(isianDebounceTimer);
+    isianDebounceTimer = setTimeout(function() {
+      triggerAutosave(q.soalId, val);
+    }, 600);
+  }
+
+  function toggleFlagCurrentQuestion() {
+    var q = activeQuestions[currentQuestionIndex];
+    flaggedQuestions[q.soalId] = !flaggedQuestions[q.soalId];
+    renderQuestion(currentQuestionIndex);
+    renderQuestionPalette();
+  }
+
+  /* --- 5. PALET NOMOR SOAL --- */
+  function renderQuestionPalette() {
+    var container = document.getElementById('questionPalette');
+    var html = '';
+
+    activeQuestions.forEach(function(q, idx) {
+      var ans = studentAnswers[q.soalId];
+      var isAnswered = ans !== undefined && ans !== null && String(ans).trim() !== '';
+      var isFlag = Boolean(flaggedQuestions[q.soalId]);
+
+      var statusClass = '';
+      if (isFlag) statusClass = 'flagged';
+      else if (isAnswered) statusClass = 'answered';
+
+      html += '<button class="palette-btn ' + statusClass + '" id="palBtn_' + idx + '" onclick="renderQuestion(' + idx + ')">' +
+        (idx + 1) +
+      '</button>';
+    });
+
+    container.innerHTML = html;
+    updatePaletteHighlight();
+  }
+
+  function updatePaletteHighlight() {
+    var btns = document.querySelectorAll('.palette-btn');
+    btns.forEach(function(b, idx) {
+      if (idx === currentQuestionIndex) {
+        b.classList.add('current');
+      } else {
+        b.classList.remove('current');
+      }
+    });
+  }
+
+  /* --- 6. AUTOSAVE SISTEM --- */
+  function triggerAutosave(soalId, jawaban) {
+    var statusEl = document.getElementById('autosaveText');
+    statusEl.textContent = 'Menyimpan...';
+
+    renderQuestionPalette();
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res && res.expired) {
+          handleTimeExpiredAutoSubmit();
+          return;
+        }
+        statusEl.textContent = 'Semua jawaban tersimpan';
+      })
+      .withFailureHandler(function() {
+        statusEl.textContent = 'Gagal menyimpan otomatis (akan dicoba lagi)';
+      })
+      .saveStudentAnswer(currentSessionData.sesiId, soalId, jawaban);
+  }
+
+  /* --- 7. PENGUMPULAN AKHIR JAWABAN --- */
+  function openConfirmSubmitModal() {
+    var totalSoal = activeQuestions.length;
+    var totalDijawab = 0;
+    var totalRagu = 0;
+
+    activeQuestions.forEach(function(q) {
+      var ans = studentAnswers[q.soalId];
+      if (ans !== undefined && ans !== null && String(ans).trim() !== '') {
+        totalDijawab++;
+      }
+      if (flaggedQuestions[q.soalId]) {
+        totalRagu++;
+      }
+    });
+
+    var belumDijawab = totalSoal - totalDijawab;
+
+    var html = '<div class="card" style="padding:14px; background:#f8fafc; border:1px solid var(--border);">' +
+      '<div style="margin-bottom:6px;">Total Soal: <b>' + totalSoal + '</b></div>' +
+      '<div style="margin-bottom:6px; color:var(--secondary);">Sudah Dijawab: <b>' + totalDijawab + '</b></div>' +
+      (belumDijawab > 0 ? '<div style="margin-bottom:6px; color:var(--accent-red); font-weight:bold;">⚠️ Belum Dijawab: ' + belumDijawab + ' Soal</div>' : '') +
+      (totalRagu > 0 ? '<div style="color:var(--accent-amber); font-weight:bold;">⚠️ Masih Ragu-ragu: ' + totalRagu + ' Soal</div>' : '') +
+    '</div>';
+
+    document.getElementById('submitSummaryBox').innerHTML = html;
+    document.getElementById('modalConfirmSubmit').classList.remove('hidden');
+  }
+
+  function executeQuizSubmission() {
+    if (isSubmittingQuiz) return;
+    isSubmittingQuiz = true;
+    closeModal('modalConfirmSubmit');
+    clearInterval(timerInterval);
+
+    showToast('Menilai jawaban di server...', 'info', 5000);
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        isSubmittingQuiz = false;
+        // Hapus penanda sesi aktif dari storage
+        localStorage.removeItem('sd_active_sesi_id');
+        localStorage.removeItem('sd_active_token');
+        localStorage.removeItem('sd_active_name');
+
+        document.getElementById('student-quiz-screen').classList.add('hidden');
+        document.getElementById('student-result-screen').classList.remove('hidden');
+
+        // Tampilkan hasil
+        if (res.tampilkanNilai && res.nilaiAkhir !== null) {
+          document.getElementById('scoreDisplayCard').classList.remove('hidden');
+          document.getElementById('studentFinalScore').textContent = res.nilaiAkhir;
+
+          if (res.totalBenar !== null) {
+            document.getElementById('studentScoreStats').innerHTML =
+              '<span class="text-success">✅ Benar: ' + res.totalBenar + '</span> ' +
+              '<span class="text-danger">❌ Salah: ' + res.totalSalah + '</span> ' +
+              '<span class="text-muted">⚪ Kosong: ' + res.totalKosong + '</span>';
+          }
+        } else {
+          document.getElementById('scoreDisplayCard').classList.add('hidden');
+          document.getElementById('studentNoticeText').textContent = 'Nilai dan hasil pengerjaan akan diumumkan oleh bapak/ibu guru.';
+        }
+
+        // Tampilkan tombol pembahasan jika diizinkan
+        if (res.canReview) {
+          document.getElementById('btnReviewQuestions').classList.remove('hidden');
+        } else {
+          document.getElementById('btnReviewQuestions').classList.add('hidden');
+        }
+      })
+      .withFailureHandler(function(err) {
+        isSubmittingQuiz = false;
+        showToast('Gagal mengumpulkan: ' + err.message, 'error', 4000);
+      })
+      .submitStudentQuiz(currentSessionData.sesiId);
+  }
+
+  /* --- 8. REVIEW PEMBAHASAN SISWA --- */
+  function loadStudentReview() {
+    showToast('Memuat pembahasan...', 'info', 2000);
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (!res || !res.success) return;
+        document.getElementById('reviewSubTitle').textContent = res.judulPaket + ' - ' + res.namaSiswa;
+        var listContainer = document.getElementById('studentReviewList');
+        var html = '';
+
+        res.reviewList.forEach(function(item) {
+          var isBenar = item.benar;
+          html += '<div class="card" style="margin-bottom:16px; border-left: 4px solid ' + (isBenar ? 'var(--secondary)' : 'var(--accent-red)') + ';">' +
+            '<div class="flex justify-between items-center" style="margin-bottom:8px;">' +
+              '<span class="font-bold" style="color:var(--primary);">Soal No. ' + item.nomorUrut + '</span>' +
+              '<span class="badge ' + (isBenar ? 'badge-success' : 'badge-danger') + '">' + (isBenar ? 'BENAR' : 'SALAH') + '</span>' +
+            '</div>' +
+            '<div class="question-text" style="font-size:16px; margin-bottom:12px;">' + escapeHtml(item.pertanyaan) + '</div>' +
+            (item.gambarUrl ? '<img src="' + escapeHtml(item.gambarUrl) + '" class="question-image" style="max-height:200px;">' : '') +
+            '<div style="font-size:14px; margin-bottom:6px;">' +
+              'Jawaban Kamu: <b style="color:' + (isBenar ? 'var(--secondary)' : 'var(--accent-red)') + ';">' + escapeHtml(item.jawabanSiswa || '(Tidak Dijawab)') + '</b>' +
+            '</div>' +
+            (item.kunciJawaban ? '<div style="font-size:14px; color:var(--text-main); margin-bottom:6px;">Kunci Jawaban: <b class="text-success">' + escapeHtml(item.kunciJawaban) + '</b></div>' : '') +
+            (item.pembahasan ? '<div style="font-size:13px; color:var(--text-muted); background:#f8fafc; padding:10px; border-radius:8px; margin-top:8px;"><b>Pembahasan:</b> ' + escapeHtml(item.pembahasan) + '</div>' : '') +
+          '</div>';
+        });
+
+        listContainer.innerHTML = html;
+        document.getElementById('student-result-screen').classList.add('hidden');
+        document.getElementById('student-review-screen').classList.remove('hidden');
+      })
+      .withFailureHandler(function(err) {
+        showToast('Gagal memuat pembahasan: ' + err.message, 'error');
+      })
+      .getStudentReview(currentSessionData.sesiId);
+  }
+
+  function backToResultScreen() {
+    document.getElementById('student-review-screen').classList.add('hidden');
+    document.getElementById('student-result-screen').classList.remove('hidden');
+  }
+
+  /* --- 9. MODAL LOGIN GURU & SETUP GURU AWAL --- */
+  function openTeacherLoginModal() {
+    document.getElementById('tLoginUsername').value = '';
+    document.getElementById('tLoginPassword').value = '';
+    document.getElementById('modalTeacherLogin').classList.remove('hidden');
+  }
+
+  function handleTeacherLoginSubmit() {
+    var u = document.getElementById('tLoginUsername').value.trim();
+    var p = document.getElementById('tLoginPassword').value;
+
+    if (!u || !p) {
+      showToast('Username dan password wajib diisi', 'warning');
+      return;
+    }
+
+    var btn = document.getElementById('btnSubmitLoginTeacher');
+    btn.disabled = true;
+    btn.textContent = 'Memverifikasi...';
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        btn.disabled = false;
+        btn.textContent = 'Masuk';
+        if (res && res.success) {
+          sessionStorage.setItem('teacherSessionToken', res.sessionToken);
+          sessionStorage.setItem('teacherProfile', JSON.stringify(res.profile));
+          closeModal('modalTeacherLogin');
+          document.getElementById('student-container').classList.add('hidden');
+          initTeacherPortal(res.sessionToken, res.profile);
+          showToast('Selamat datang, ' + res.profile.namaGuru, 'success');
+        } else {
+          showToast(res.message || 'Login gagal', 'error');
+        }
+      })
+      .withFailureHandler(function(err) {
+        btn.disabled = false;
+        btn.textContent = 'Masuk';
+        showToast('Login gagal: ' + err.message, 'error');
+      })
+      .loginTeacher(u, p);
+  }
+
+  function openFirstTeacherSetupModal() {
+    closeModal('modalTeacherLogin');
+    document.getElementById('ftNama').value = '';
+    document.getElementById('ftUsername').value = '';
+    document.getElementById('ftPassword').value = '';
+    document.getElementById('modalFirstTeacher').classList.remove('hidden');
+  }
+
+  function handleCreateFirstTeacherSubmit() {
+    var nama = document.getElementById('ftNama').value.trim();
+    var u = document.getElementById('ftUsername').value.trim();
+    var p = document.getElementById('ftPassword').value;
+
+    if (!nama || !u || !p) {
+      showToast('Semua kolom wajib diisi', 'warning');
+      return;
+    }
+
+    showToast('Membuat akun guru...', 'info', 2000);
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        showToast(res.message, 'success', 4000);
+        closeModal('modalFirstTeacher');
+        openTeacherLoginModal();
+        document.getElementById('tLoginUsername').value = u;
+      })
+      .withFailureHandler(function(err) {
+        showToast(err.message, 'error');
+      })
+      .createFirstTeacher(u, p, nama);
+  }
+</script>

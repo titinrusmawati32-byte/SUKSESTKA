@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Latihan Soal SD - Pintar & Ceria</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- Google Fonts: Comic Neue untuk font ceria & ramah anak SD -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+  
+  <?!= include('Styles') ?>
+</head>
+<body>
+
+  <!-- Toast Container untuk Notifikasi Mengambang -->
+  <div id="toast-container"></div>
+
+  <!-- Modal Konfirmasi Universal -->
+  <div id="modalUniversalConfirm" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="universalConfirmTitle">Konfirmasi Tindakan</h3>
+        <button class="modal-close" onclick="closeModal('modalUniversalConfirm')">&times;</button>
+      </div>
+      <p id="universalConfirmMessage" style="font-size: 14px; color: var(--text-main); margin-bottom: 20px;"></p>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modalUniversalConfirm')">Batal</button>
+        <button class="btn btn-danger" id="btnUniversalConfirmOk">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Partial Guru: Halaman Dashboard & Pengelolaan -->
+  <?!= include('TeacherApp') ?>
+
+  <!-- Partial Siswa: Halaman Token, Pengerjaan, dan Hasil -->
+  <?!= include('StudentApp') ?>
+
+  <!-- JavaScript Utility Universal -->
+  <script>
+    /**
+     * Menampilkan notifikasi Toast
+     * @param {string} message Pesan notifikasi
+     * @param {string} type Tipe: 'success' | 'error' | 'warning' | 'info'
+     * @param {number} duration Durasi tayang dalam milidetik (default 3000)
+     */
+    function showToast(message, type, duration) {
+      var container = document.getElementById('toast-container');
+      var toast = document.createElement('div');
+      var tType = type || 'info';
+      var d = duration || 3000;
+
+      var iconMap = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+      };
+
+      toast.className = 'toast toast-' + tType;
+      toast.innerHTML = '<span>' + (iconMap[tType] || 'ℹ️') + '</span> <span>' + escapeHtml(message) + '</span>';
+      container.appendChild(toast);
+
+      setTimeout(function() {
+        toast.style.transition = 'all 0.3s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(function() {
+          if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 300);
+      }, d);
+    }
+
+    /**
+     * Menampilkan dialog konfirmasi interaktif
+     */
+    var pendingConfirmCallback = null;
+    function showConfirmModal(title, message, onConfirm) {
+      document.getElementById('universalConfirmTitle').textContent = title || 'Konfirmasi';
+      document.getElementById('universalConfirmMessage').textContent = message || 'Apakah Anda yakin?';
+      pendingConfirmCallback = onConfirm;
+      document.getElementById('modalUniversalConfirm').classList.remove('hidden');
+
+      var okBtn = document.getElementById('btnUniversalConfirmOk');
+      okBtn.onclick = function() {
+        closeModal('modalUniversalConfirm');
+        if (typeof pendingConfirmCallback === 'function') {
+          pendingConfirmCallback();
+        }
+      };
+    }
+
+    /**
+     * Menutup modal berdasarkan ID
+     */
+    function closeModal(modalId) {
+      var modal = document.getElementById(modalId);
+      if (modal) modal.classList.add('hidden');
+    }
+
+    /**
+     * Escape HTML untuk pencegahan XSS
+     */
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    /**
+     * Salin teks ke Clipboard
+     */
+    function copyTextToClipboard(text, successMsg) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          showToast(successMsg || 'Berhasil disalin ke clipboard!', 'success');
+        }).catch(function() {
+          fallbackCopyText(text, successMsg);
+        });
+      } else {
+        fallbackCopyText(text, successMsg);
+      }
+    }
+
+    function fallbackCopyText(text, successMsg) {
+      var textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.top = '0';
+      textArea.style.left = '0';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showToast(successMsg || 'Berhasil disalin ke clipboard!', 'success');
+      } catch (err) {
+        showToast('Gagal menyalin otomatis', 'error');
+      }
+      document.body.removeChild(textArea);
+    }
+
+    /**
+     * Unduh file CSV di browser
+     */
+    function downloadCsvFile(csvContent, filename) {
+      var blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      var link = document.createElement('a');
+      var url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename || 'data.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>

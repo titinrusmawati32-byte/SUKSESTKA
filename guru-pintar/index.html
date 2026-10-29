@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Latihan Soal SD - Guru Pintar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <!-- Google Fonts: Comic Neue untuk font ceria & ramah anak SD -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS Utama (Path Relatif Kompatibel dengan GitHub Pages) -->
+  <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+<body>
+
+  <!-- Loading Bar Global -->
+  <div id="global-loader" class="hidden"></div>
+
+  <!-- Toast Container untuk Notifikasi Mengambang -->
+  <div id="toast-container"></div>
+
+  <!-- Modal Konfirmasi Universal -->
+  <div id="modalUniversalConfirm" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="universalConfirmTitle">Konfirmasi Tindakan</h3>
+        <button class="modal-close" onclick="app.closeModal('modalUniversalConfirm')">&times;</button>
+      </div>
+      <p id="universalConfirmMessage" style="font-size: 14px; color: var(--text-main); margin-bottom: 20px;"></p>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalUniversalConfirm')">Batal</button>
+        <button class="btn btn-danger" id="btnUniversalConfirmOk">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Konfigurasi URL Backend (GAS API URL) -->
+  <div id="modalApiConfig" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title">⚙️ Konfigurasi URL Backend</h3>
+        <button class="modal-close" onclick="app.closeModal('modalApiConfig')">&times;</button>
+      </div>
+      <p class="text-muted" style="font-size: 13px; margin-bottom: 14px;">
+        Masukkan URL deployment Web App Google Apps Script Anda (contoh: <code>https://script.google.com/macros/s/.../exec</code>). URL disimpan aman di browser lokal Anda.
+      </p>
+      <div class="form-group">
+        <label class="form-label">URL Web App Google Apps Script</label>
+        <input type="url" id="modalApiUrlInput" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalApiConfig')">Tutup</button>
+        <button class="btn btn-primary" onclick="app.saveApiConfigFromModal()">Simpan Konfigurasi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       PORTAL GURU (DASHBOARD, KELAS, BANK SOAL, PAKET, TOKEN, HASIL)
+       ======================================================================== -->
+  <div id="teacher-container" class="teacher-wrapper hidden">
+    <!-- Sidebar Guru -->
+    <aside class="teacher-sidebar" id="teacherSidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <span>🎒</span>
+          <span>Guru Pintar</span>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li class="sidebar-item active" data-view="dashboard">
+          <a href="javascript:void(0)" onclick="app.switchTeacherView('dashboard')">
+            <span>📊</span>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="sidebar-item" data-view="kelas">
+          <a href="javascript:void(0)" onclick="app.switchTeacherView('kelas')">
+            <span>🏫</span>
+            <span>Kelas & Siswa</span>
+          </a>
+        </li>
+        <li class="sidebar-item" data-view="banksoal">
+          <a href="javascript:void(0)" onclick="app.switchTeacherView('banksoal')">
+            <span>📚</span>
+            <span>Bank Soal</span>
+          </a>
+        </li>
+        <li class="sidebar-item" data-view="paket">
+          <a href="javascript:void(0)" onclick="app.switchTeacherView('paket')">
+            <span>📝</span>
+            <span>Paket Latihan</span>
+          </a>
+        </li>
+        <li class="sidebar-item" data-view="token">
+          <a href="javascript:void(0)" onclick="app.switchTeacherView('token')">
+            <span>🔑</span>
+            <span>Token Siswa</span>
+          </a>
+        </li>
+        <li class="sidebar-item" data-view="hasil">
+          <a href="javascript:void(0)" onclick="app.switchTeacherView('hasil')">
+            <span>📈</span>
+            <span>Hasil & Rekap</span>
+          </a>
+        </li>
+        <li class="sidebar-item" data-view="pengaturan">
+          <a href="javascript:void(0)" onclick="app.switchTeacherView('pengaturan')">
+            <span>⚙️</span>
+            <span>Pengaturan</span>
+          </a>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <button class="btn btn-secondary btn-sm" style="width:100%" onclick="auth.logout()">
+          <span>🚪</span> Keluar Akun
+        </button>
+      </div>
+    </aside>
+
+    <!-- Konten Utama Guru -->
+    <main class="teacher-main">
+      <header class="teacher-header">
+        <div class="flex items-center gap-3">
+          <button class="mobile-menu-btn" onclick="app.toggleSidebar()">☰</button>
+          <h2 id="teacherPageTitle" style="font-size: 18px; font-weight: 700;">Dashboard</h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="badge badge-primary">Guru</span>
+          <span id="teacherGreeting" style="font-weight: 600; font-size: 14px;">Bpk/Ibu Guru</span>
+        </div>
+      </header>
+
+      <div class="teacher-content">
+        <!-- 1. DASHBOARD VIEW -->
+        <div id="view-dashboard" class="t-view">
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#eff6ff; color:#2563eb;">🏫</div>
+              <div>
+                <div class="stat-val" id="dashTotalKelas">0</div>
+                <div class="stat-lbl">Total Kelas</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#fef3c7; color:#d97706;">📝</div>
+              <div>
+                <div class="stat-val" id="dashPaketAktif">0</div>
+                <div class="stat-lbl">Paket Aktif</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#d1fae5; color:#059669;">📚</div>
+              <div>
+                <div class="stat-val" id="dashTotalSoal">0</div>
+                <div class="stat-lbl">Soal di Bank</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#f3e8ff; color:#7e22ce;">🎯</div>
+              <div>
+                <div class="stat-val" id="dashTotalPengerjaan">0</div>
+                <div class="stat-lbl">Siswa Mengerjakan</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#fee2e2; color:#dc2626;">⭐</div>
+              <div>
+                <div class="stat-val" id="dashRataRata">0</div>
+                <div class="stat-lbl">Rata-rata Nilai</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex items-center justify-between" style="margin-bottom: 16px;">
+              <h3 style="font-size: 16px; font-weight: 700;">Aksi Cepat</h3>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <button class="btn btn-primary" onclick="bankSoal.openModal()">
+                <span>➕</span> Buat Soal Baru
+              </button>
+              <button class="btn btn-success" onclick="paketLatihan.openModal()">
+                <span>📝</span> Buat Paket Latihan
+              </button>
+              <button class="btn btn-secondary" onclick="kelas.openModal()">
+                <span>🏫</span> Tambah Kelas Baru
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Aktivitas Siswa Terbaru</h3>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Nama Siswa</th>
+                    <th>Paket Latihan</th>
+                    <th>Nilai Akhir</th>
+                    <th>Waktu Pengumpulan</th>
+                  </tr>
+                </thead>
+                <tbody id="dashRecentTable">
+                  <tr><td colspan="4" class="text-center text-muted">Memuat aktivitas...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. KELAS & SISWA VIEW -->
+        <div id="view-kelas" class="t-view hidden">
+          <div class="flex items-center justify-between" style="margin-bottom: 16px;">
+            <div>
+              <h3 style="font-size: 18px; font-weight: 700;">Daftar Kelas</h3>
+              <p class="text-muted" style="font-size: 13px;">Kelola kelas dan daftar nama siswa</p>
+            </div>
+            <button class="btn btn-primary" onclick="kelas.openModal()">
+              <span>➕</span> Tambah Kelas
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Nama Kelas</th>
+                    <th>Tingkat</th>
+                    <th>Tahun Ajaran</th>
+                    <th>Jumlah Siswa</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="kelasTableBody">
+                  <tr><td colspan="6" class="text-center text-muted">Memuat data kelas...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. BANK SOAL VIEW -->
+        <div id="view-banksoal" class="t-view hidden">
+          <div class="flex items-center justify-between flex-wrap gap-3" style="margin-bottom: 16px;">
+            <div>
+              <h3 style="font-size: 18px; font-weight: 700;">Bank Soal</h3>
+              <p class="text-muted" style="font-size: 13px;">Koleksi soal pilihan ganda, benar/salah, dan isian singkat</p>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-secondary" onclick="bankSoal.openImportModal()">
+                <span>📥</span> Impor Excel/CSV
+              </button>
+              <button class="btn btn-primary" onclick="bankSoal.openModal()">
+                <span>➕</span> Tambah Soal Manual
+              </button>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 16px;">
+            <div class="flex flex-wrap gap-3 items-center">
+              <input type="text" id="bankSearch" class="form-control" placeholder="Cari pertanyaan / topik..." style="max-width: 250px;" oninput="bankSoal.filter()">
+              <select id="bankFilterMapel" class="form-control" style="max-width: 180px;" onchange="bankSoal.filter()">
+                <option value="">Semua Mapel</option>
+                <option value="Matematika">Matematika</option>
+                <option value="IPA">IPA</option>
+                <option value="IPS">IPS</option>
+                <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                <option value="PPKn">PPKn</option>
+                <option value="Umum">Umum</option>
+              </select>
+              <select id="bankFilterJenis" class="form-control" style="max-width: 180px;" onchange="bankSoal.filter()">
+                <option value="">Semua Jenis Soal</option>
+                <option value="PILIHAN_GANDA">Pilihan Ganda</option>
+                <option value="BENAR_SALAH">Benar / Salah</option>
+                <option value="ISIAN_SINGKAT">Isian Singkat</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40px;">No</th>
+                    <th>Pertanyaan</th>
+                    <th>Mapel / Kelas</th>
+                    <th>Jenis Soal</th>
+                    <th>Kunci</th>
+                    <th>Gambar</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="bankSoalTableBody">
+                  <tr><td colspan="7" class="text-center text-muted">Memuat bank soal...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. PAKET LATIHAN VIEW -->
+        <div id="view-paket" class="t-view hidden">
+          <div class="flex items-center justify-between" style="margin-bottom: 16px;">
+            <div>
+              <h3 style="font-size: 18px; font-weight: 700;">Paket Latihan Soal</h3>
+              <p class="text-muted" style="font-size: 13px;">Susun soal menjadi paket kuis, atur waktu, dan publikasikan</p>
+            </div>
+            <button class="btn btn-primary" onclick="paketLatihan.openModal()">
+              <span>➕</span> Buat Paket Latihan
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Judul Latihan</th>
+                    <th>Mapel / Kelas</th>
+                    <th>Durasi</th>
+                    <th>Jumlah Soal</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="paketTableBody">
+                  <tr><td colspan="6" class="text-center text-muted">Memuat paket latihan...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. TOKEN SISWA VIEW -->
+        <div id="view-token" class="t-view hidden">
+          <div class="flex items-center justify-between" style="margin-bottom: 16px;">
+            <div>
+              <h3 style="font-size: 18px; font-weight: 700;">Token Akses Siswa</h3>
+              <p class="text-muted" style="font-size: 13px;">Bagikan kode token ini kepada siswa untuk mengerjakan latihan</p>
+            </div>
+            <button class="btn btn-primary" onclick="tokenSiswa.openModal()">
+              <span>➕</span> Buat Token Baru
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Kode Token</th>
+                    <th>Paket Latihan</th>
+                    <th>Kelas Khusus</th>
+                    <th>Berlaku Sampai</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tokenTableBody">
+                  <tr><td colspan="6" class="text-center text-muted">Memuat token siswa...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. HASIL & REKAP VIEW -->
+        <div id="view-hasil" class="t-view hidden">
+          <div class="flex items-center justify-between flex-wrap gap-3" style="margin-bottom: 16px;">
+            <div>
+              <h3 style="font-size: 18px; font-weight: 700;">Hasil & Rekap Nilai</h3>
+              <p class="text-muted" style="font-size: 13px;">Pantau skor, periksa detail lembar jawaban siswa, dan unduh CSV</p>
+            </div>
+            <button class="btn btn-success" onclick="hasilRekap.downloadCsv()">
+              <span>📊</span> Unduh Rekap CSV
+            </button>
+          </div>
+
+          <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+            <div class="stat-card">
+              <div>
+                <div class="stat-val" id="rekapTotalPeserta">0</div>
+                <div class="stat-lbl">Total Siswa Selesai</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div>
+                <div class="stat-val" id="rekapRataRata">0</div>
+                <div class="stat-lbl">Rata-rata Kelas</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div>
+                <div class="stat-val text-success" id="rekapTertinggi">0</div>
+                <div class="stat-lbl">Nilai Tertinggi</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div>
+                <div class="stat-val text-danger" id="rekapTerendah">0</div>
+                <div class="stat-lbl">Nilai Terendah</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Nama Siswa</th>
+                    <th>Kelas</th>
+                    <th>Paket Latihan</th>
+                    <th>Selesai Pada</th>
+                    <th>Nilai Akhir</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="hasilTableBody">
+                  <tr><td colspan="6" class="text-center text-muted">Memuat hasil siswa...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. PENGATURAN VIEW -->
+        <div id="view-pengaturan" class="t-view hidden">
+          <div class="card" style="max-width: 650px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Koneksi Backend Google Apps Script</h3>
+            <p class="text-muted" style="font-size: 13px; margin-bottom: 14px;">
+              Frontend GitHub Pages ini berkomunikasi langsung dengan backend Web App Google Apps Script melalui HTTP POST (CORS Simple Request).
+            </p>
+            <div class="form-group">
+              <label class="form-label">URL Web App Google Apps Script (Deployment URL)</label>
+              <input type="url" id="backendApiUrlInput" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-primary btn-sm" onclick="app.saveBackendUrlFromView()">Simpan URL</button>
+              <button class="btn btn-secondary btn-sm" onclick="app.testBackendConnection()">Uji Koneksi (Ping)</button>
+            </div>
+          </div>
+
+          <div class="card" style="max-width: 650px; margin-top: 20px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Ubah Password Guru</h3>
+            <div class="form-group">
+              <label class="form-label">Password Lama</label>
+              <input type="password" id="setOldPass" class="form-control" placeholder="Masukkan password saat ini">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password Baru</label>
+              <input type="password" id="setNewPass" class="form-control" placeholder="Minimal 6 karakter">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ulangi Password Baru</label>
+              <input type="password" id="setConfirmPass" class="form-control" placeholder="Ulangi password baru">
+            </div>
+            <button class="btn btn-primary" onclick="app.handlePasswordChangeSubmit()">Simpan Password Baru</button>
+          </div>
+
+          <div class="card" style="max-width: 650px; margin-top: 20px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Integritas Database Google Sheets</h3>
+            <p class="text-muted" style="font-size: 13px; margin-bottom: 12px;">Verifikasi bahwa 10 sheet database dan folder Google Drive Media siap digunakan.</p>
+            <button class="btn btn-secondary" onclick="app.runDatabaseSetupVerification()">
+              <span>🔄</span> Jalankan Verifikasi Database
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ========================================================================
+       PORTAL SISWA (MASUK TOKEN, PENGERJAAN, HASIL, PEMBAHASAN)
+       ======================================================================== -->
+  <div id="student-container" class="student-wrapper">
+    <!-- 1. SCREEN TOKEN & LOGIN GURU TOGGLE -->
+    <div id="student-token-screen">
+      <div class="flex justify-between items-center" style="margin-bottom: 24px;">
+        <div class="flex items-center gap-2">
+          <span style="font-size: 28px;">🌟</span>
+          <span style="font-weight: 800; font-size: 20px; color: var(--primary);">Latihan Soal SD</span>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-secondary btn-sm" onclick="app.openApiConfigModal()" title="Konfigurasi URL API">
+            <span>⚙️</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="app.openTeacherLoginModal()">
+            <span>👨‍🏫</span> Masuk sebagai Guru
+          </button>
+        </div>
+      </div>
+
+      <div class="card text-center" style="padding: 40px 24px;">
+        <div style="font-size: 64px; margin-bottom: 16px;">✏️</div>
+        <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 8px; color: var(--text-main);">Halo, Siswa Hebat!</h2>
+        <p class="text-muted" style="font-size: 16px; margin-bottom: 28px;">
+          Masukkan kode token latihan yang diberikan oleh bapak/ibu guru untuk mulai belajar:
+        </p>
+
+        <div style="max-width: 380px; margin: 0 auto;">
+          <input type="text" id="inputStudentToken" class="form-control text-center"
+                 placeholder="KODE TOKEN"
+                 style="font-size: 24px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; padding: 16px; margin-bottom: 16px; border: 3px solid var(--border-focus);"
+                 maxlength="20">
+          <button class="btn btn-primary btn-lg" style="width: 100%;" onclick="tokenSiswa.validateInputToken()">
+            <span>🚀</span> Mulai Latihan
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. SCREEN INFORMASI & IDENTITAS SISWA -->
+    <div id="student-info-screen" class="hidden">
+      <div class="card" style="padding: 32px 24px;">
+        <div class="flex items-center gap-3" style="margin-bottom: 20px;">
+          <span style="font-size: 36px;">📋</span>
+          <div>
+            <h2 id="infoQuizTitle" style="font-size: 22px; font-weight: 800;">Judul Latihan</h2>
+            <span class="badge badge-primary" id="infoQuizMapel">Matematika - Kelas 6</span>
+          </div>
+        </div>
+
+        <div class="card" style="background:#f8fafc; padding:16px; margin-bottom:20px; border:1px solid var(--border);">
+          <h4 style="font-size:14px; font-weight:700; margin-bottom:6px;">Petunjuk Latihan:</h4>
+          <p id="infoQuizPetunjuk" style="font-size:14px; color:var(--text-muted);"></p>
+          <div class="flex gap-4" style="margin-top:12px; font-size:13px; font-weight:600;">
+            <div>⏱️ Durasi: <span id="infoQuizDurasi" class="text-primary">-</span></div>
+            <div>🔄 Kesempatan: <span id="infoQuizPercobaan" class="text-primary">-</span></div>
+          </div>
+        </div>
+
+        <div style="max-width: 480px; margin: 0 auto; text-align: left;">
+          <div id="containerRosterSelect" class="form-group hidden">
+            <label class="form-label" style="font-size: 16px;">Pilih Nama Kamu dari Daftar:</label>
+            <select id="selectRosterNama" class="form-control" style="font-size: 16px; padding: 12px;" onchange="tokenSiswa.handleRosterSelectChange()">
+              <option value="">-- Pilih Nama Siswa --</option>
+            </select>
+          </div>
+
+          <div id="containerManualName" class="form-group">
+            <label class="form-label" style="font-size: 16px;">Nama Lengkap Siswa: <span class="text-danger">*</span></label>
+            <input type="text" id="inputStudentName" class="form-control" placeholder="Tuliskan nama lengkap kamu..." style="font-size: 16px;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Kelas:</label>
+            <input type="text" id="inputStudentKelas" class="form-control" placeholder="Contoh: 6A" style="font-size: 15px;">
+          </div>
+
+          <div class="flex gap-3" style="margin-top: 24px;">
+            <button class="btn btn-secondary" onclick="app.showStudentEntryScreen()">Kembali</button>
+            <button class="btn btn-success btn-lg" style="flex: 1;" onclick="tokenSiswa.startQuiz()">
+              <span>Kerjakan Sekarang ✍️</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. SCREEN QUIZ RUNNER (PENGERJAAN) -->
+    <div id="student-quiz-screen" class="hidden">
+      <div class="student-topbar">
+        <div>
+          <div id="quizTopbarTitle" style="font-weight: 800; font-size: 16px; color: var(--text-main);">Latihan Soal</div>
+          <div class="autosave-status" id="quizAutosaveStatus">
+            <span>💾</span> <span id="autosaveText">Semua jawaban tersimpan</span>
+          </div>
+        </div>
+        <div id="quizTimerBadge" class="timer-badge">
+          <span>⏰</span> <span id="quizTimerText">--:--</span>
+        </div>
+      </div>
+
+      <div class="question-container">
+        <div class="question-header">
+          <span class="question-number" id="qCurrentNumber">Soal No. 1</span>
+          <button id="btnFlagQuestion" class="btn btn-secondary btn-sm" onclick="tokenSiswa.toggleFlagCurrentQuestion()">
+            <span>🏳️</span> <span id="flagBtnText">Tandai Ragu-ragu</span>
+          </button>
+        </div>
+
+        <div class="question-text" id="qQuestionText">Pertanyaan soal akan muncul di sini...</div>
+        <img id="qQuestionImage" class="question-image hidden" src="" alt="Gambar Soal">
+
+        <div id="qAreaPilihanGanda" class="options-grid"></div>
+
+        <div id="qAreaBenarSalah" class="bs-container hidden">
+          <div class="btn-bs" id="btnBsBenar" onclick="tokenSiswa.selectAnswerBenarSalah('BENAR')">BENAR</div>
+          <div class="btn-bs" id="btnBsSalah" onclick="tokenSiswa.selectAnswerBenarSalah('SALAH')">SALAH</div>
+        </div>
+
+        <div id="qAreaIsianSingkat" class="hidden">
+          <div class="form-group" style="margin-top: 16px;">
+            <label class="form-label">Jawaban Kamu:</label>
+            <input type="text" id="inputJawabanIsian" class="form-control" style="font-size: 18px; padding: 14px;" placeholder="Ketik jawabanmu di sini..." oninput="tokenSiswa.handleIsianInput(event)">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center flex-wrap gap-3">
+        <button class="btn btn-secondary btn-lg" id="btnPrevQuestion" onclick="tokenSiswa.navigateQuestion(-1)">
+          <span>⬅️</span> Sebelumnya
+        </button>
+
+        <button class="btn btn-warning btn-lg" onclick="tokenSiswa.openConfirmSubmitModal()">
+          <span>📤 Kumpulkan Jawaban</span>
+        </button>
+
+        <button class="btn btn-primary btn-lg" id="btnNextQuestion" onclick="tokenSiswa.navigateQuestion(1)">
+          Berikutnya <span>➡️</span>
+        </button>
+      </div>
+
+      <div style="margin-top: 24px;">
+        <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">Daftar Nomor Soal:</h4>
+        <div class="question-palette" id="questionPalette"></div>
+      </div>
+    </div>
+
+    <!-- 4. SCREEN HASIL PENGERJAAN -->
+    <div id="student-result-screen" class="hidden">
+      <div class="card text-center" style="padding: 40px 24px;">
+        <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
+        <h2 style="font-size: 26px; font-weight: 800; color: var(--secondary); margin-bottom: 8px;">Latihan Berhasil Dikumpulkan!</h2>
+        <p class="text-muted" style="font-size: 15px; margin-bottom: 24px;">
+          Hebat, kamu sudah menyelesaikan seluruh soal dengan mandiri.
+        </p>
+
+        <div id="scoreDisplayCard" class="card hidden" style="max-width: 320px; margin: 0 auto 24px; background: #eff6ff; border: 2px solid var(--primary);">
+          <div style="font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 4px;">NILAI KAMU:</div>
+          <div id="studentFinalScore" style="font-size: 54px; font-weight: 900; color: var(--primary); line-height: 1;">85</div>
+          <div id="studentScoreStats" class="flex justify-center gap-3" style="margin-top: 12px; font-size: 13px; font-weight: 700;"></div>
+        </div>
+
+        <p id="studentNoticeText" class="text-muted" style="font-size: 14px; margin-bottom: 24px;"></p>
+
+        <div class="flex justify-center gap-3 flex-wrap">
+          <button id="btnReviewQuestions" class="btn btn-primary btn-lg hidden" onclick="tokenSiswa.loadReview()">
+            <span>📖</span> Lihat Pembahasan Soal
+          </button>
+          <button class="btn btn-secondary btn-lg" onclick="app.showStudentEntryScreen()">
+            <span>🏠</span> Halaman Utama
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. SCREEN PEMBAHASAN SISWA -->
+    <div id="student-review-screen" class="hidden">
+      <div class="flex justify-between items-center" style="margin-bottom: 20px;">
+        <div>
+          <h2 style="font-size: 20px; font-weight: 800;">Pembahasan Soal</h2>
+          <span class="text-muted" id="reviewSubTitle" style="font-size: 14px;"></span>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="tokenSiswa.backToResultScreen()">Kembali</button>
+      </div>
+      <div id="studentReviewList"></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL-MODAL GURU & SISWA
+       ======================================================================== -->
+
+  <!-- Modal Login Guru -->
+  <div id="modalTeacherLogin" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Masuk Portal Guru</h3>
+        <button class="modal-close" onclick="app.closeModal('modalTeacherLogin')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" id="tLoginUsername" class="form-control" placeholder="Username guru">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="tLoginPassword" class="form-control" placeholder="Password guru" onkeyup="if(event.key==='Enter') app.handleTeacherLoginSubmit()">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalTeacherLogin')">Batal</button>
+        <button class="btn btn-primary" id="btnSubmitLoginTeacher" onclick="app.handleTeacherLoginSubmit()">Masuk</button>
+      </div>
+      <div style="margin-top: 16px; text-align: center;">
+        <a href="javascript:void(0)" onclick="app.openFirstTeacherSetupModal()" style="font-size: 13px; color: var(--primary); text-decoration: none;">
+          Belum punya akun guru? Buat Akun Guru Pertama
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Setup Akun Guru Pertama -->
+  <div id="modalFirstTeacher" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Setup Akun Guru Pertama</h3>
+        <button class="modal-close" onclick="app.closeModal('modalFirstTeacher')">&times;</button>
+      </div>
+      <p class="text-muted" style="font-size: 13px; margin-bottom: 16px;">
+        Buat akun guru awal untuk mengelola aplikasi. Password disimpan sebagai hash SHA-256 + cryptographic salt di Google Sheets.
+      </p>
+      <div class="form-group">
+        <label class="form-label">Nama Lengkap Guru</label>
+        <input type="text" id="ftNama" class="form-control" placeholder="Contoh: Budi Pratama, S.Pd">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" id="ftUsername" class="form-control" placeholder="Minimal 3 karakter alfanumerik">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="ftPassword" class="form-control" placeholder="Minimal 6 karakter">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalFirstTeacher')">Batal</button>
+        <button class="btn btn-success" onclick="app.handleCreateFirstTeacherSubmit()">Buat Akun Guru</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Konfirmasi Pengumpulan Kuis -->
+  <div id="modalConfirmSubmit" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Kumpulkan Jawaban?</h3>
+        <button class="modal-close" onclick="app.closeModal('modalConfirmSubmit')">&times;</button>
+      </div>
+      <div id="submitSummaryBox" style="font-size: 15px; margin-bottom: 16px;"></div>
+      <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">
+        Pastikan seluruh pertanyaan telah dijawab dengan yakin. Setelah dikumpulkan, jawaban tidak dapat diubah kembali.
+      </p>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalConfirmSubmit')">Periksa Lagi</button>
+        <button class="btn btn-primary" onclick="tokenSiswa.submitQuiz()">Ya, Kumpulkan Sekarang</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Form Kelas -->
+  <div id="modalKelas" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalKelasTitle">Tambah Kelas</h3>
+        <button class="modal-close" onclick="app.closeModal('modalKelas')">&times;</button>
+      </div>
+      <input type="hidden" id="kelasIdInput">
+      <div class="form-group">
+        <label class="form-label">Nama Kelas <span class="text-danger">*</span></label>
+        <input type="text" id="namaKelasInput" class="form-control" placeholder="Contoh: 6A, 6B, dsb.">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tingkat Kelas</label>
+        <select id="tingkatKelasInput" class="form-control">
+          <option value="1">Kelas 1</option>
+          <option value="2">Kelas 2</option>
+          <option value="3">Kelas 3</option>
+          <option value="4">Kelas 4</option>
+          <option value="5">Kelas 5</option>
+          <option value="6" selected>Kelas 6</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tahun Ajaran</label>
+        <input type="text" id="tahunAjaranInput" class="form-control" placeholder="Contoh: 2026/2027">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalKelas')">Batal</button>
+        <button class="btn btn-primary" onclick="kelas.save()">Simpan Kelas</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Roster Siswa Kelas -->
+  <div id="modalRosterSiswa" class="modal-overlay hidden">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="rosterKelasTitle">Daftar Siswa Kelas</h3>
+        <button class="modal-close" onclick="app.closeModal('modalRosterSiswa')">&times;</button>
+      </div>
+      <div class="flex justify-between items-center" style="margin-bottom: 16px;">
+        <div class="flex gap-2">
+          <button class="btn btn-primary btn-sm" onclick="kelas.openAddSiswaForm()">➕ Tambah Siswa</button>
+          <button class="btn btn-secondary btn-sm" onclick="kelas.openImportModal()">📥 Impor Siswa CSV</button>
+        </div>
+      </div>
+      <div id="miniSiswaForm" class="card hidden" style="padding: 16px; margin-bottom: 16px; background:#f8fafc;">
+        <h4 style="font-size: 14px; font-weight:700; margin-bottom:10px;">Tambah Siswa Baru</h4>
+        <div class="flex gap-2 flex-wrap">
+          <input type="text" id="siswaNamaInput" class="form-control" placeholder="Nama Lengkap Siswa" style="flex:2; min-width:200px;">
+          <input type="number" id="siswaAbsenInput" class="form-control" placeholder="No. Absen" style="flex:1; min-width:100px;">
+          <button class="btn btn-success btn-sm" onclick="kelas.saveSiswa()">Simpan</button>
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('miniSiswaForm').classList.add('hidden')">Tutup</button>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Absen</th>
+              <th>Nama Siswa</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="rosterTableBody">
+            <tr><td colspan="3" class="text-center text-muted">Memuat siswa...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Impor Siswa CSV -->
+  <div id="modalImportSiswa" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Impor Daftar Siswa via CSV</h3>
+        <button class="modal-close" onclick="app.closeModal('modalImportSiswa')">&times;</button>
+      </div>
+      <p class="text-muted" style="font-size: 13px; margin-bottom: 12px;">
+        Format kolom: <code>NamaSiswa, NomorAbsen, KodeSiswaOpsional</code>
+      </p>
+      <div style="margin-bottom: 16px;">
+        <button class="btn btn-secondary btn-sm" onclick="kelas.downloadTemplate()">📄 Unduh Template Siswa</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Pilih File CSV Siswa</label>
+        <input type="file" id="siswaCsvFileInput" accept=".csv" class="form-control" onchange="kelas.handleFileSelected(event)">
+      </div>
+      <div id="siswaImportPreviewArea" class="hidden">
+        <h4 style="font-size: 14px; font-weight: 700; margin-top: 12px;">Hasil Validasi:</h4>
+        <p id="siswaImportSummary" style="font-size: 13px; margin: 6px 0;"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalImportSiswa')">Batal</button>
+        <button class="btn btn-primary" id="btnCommitImportSiswa" disabled onclick="kelas.commitImport()">Konfirmasi & Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Editor Bank Soal -->
+  <div id="modalSoal" class="modal-overlay hidden">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalSoalTitle">Editor Soal</h3>
+        <button class="modal-close" onclick="app.closeModal('modalSoal')">&times;</button>
+      </div>
+      <input type="hidden" id="soalIdInput">
+      <div class="flex gap-3 flex-wrap" style="margin-bottom: 12px;">
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+          <label class="form-label">Mata Pelajaran <span class="text-danger">*</span></label>
+          <select id="soalMapelInput" class="form-control">
+            <option value="Matematika">Matematika</option>
+            <option value="IPA">IPA</option>
+            <option value="IPS">IPS</option>
+            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+            <option value="PPKn">PPKn</option>
+            <option value="Umum">Umum</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 100px;">
+          <label class="form-label">Tingkat Kelas</label>
+          <select id="soalTingkatInput" class="form-control">
+            <option value="1">Kelas 1</option>
+            <option value="2">Kelas 2</option>
+            <option value="3">Kelas 3</option>
+            <option value="4">Kelas 4</option>
+            <option value="5">Kelas 5</option>
+            <option value="6" selected>Kelas 6</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+          <label class="form-label">Topik / Materi</label>
+          <input type="text" id="soalTopikInput" class="form-control" placeholder="Contoh: Operasi Pecahan">
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+          <label class="form-label">Jenis Soal <span class="text-danger">*</span></label>
+          <select id="soalJenisInput" class="form-control" onchange="bankSoal.handleJenisSoalChange()">
+            <option value="PILIHAN_GANDA">Pilihan Ganda</option>
+            <option value="BENAR_SALAH">Benar / Salah</option>
+            <option value="ISIAN_SINGKAT">Isian Singkat</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Pertanyaan <span class="text-danger">*</span></label>
+        <textarea id="soalPertanyaanInput" class="form-control" rows="3" placeholder="Tuliskan teks pertanyaan soal di sini..."></textarea>
+      </div>
+
+      <!-- Upload Gambar Opsional -->
+      <div class="form-group">
+        <label class="form-label">Gambar Pendukung (Opsional)</label>
+        <input type="file" id="soalImageFileInput" accept="image/*" class="form-control" onchange="bankSoal.handleImageSelected(event)">
+        <div id="soalImagePreviewContainer" style="margin-top: 8px;" class="hidden">
+          <img id="soalImagePreview" src="" alt="Pratinjau" style="max-height: 140px; border-radius: 8px; border: 1px solid var(--border);">
+          <button class="btn btn-secondary btn-sm" type="button" onclick="bankSoal.removeImage()" style="margin-left: 8px;">Hapus Gambar</button>
+        </div>
+      </div>
+
+      <!-- Pilihan Ganda Container -->
+      <div id="containerPilihanGanda">
+        <div class="form-group">
+          <label class="form-label">Pilihan A</label>
+          <input type="text" id="soalPilA" class="form-control" placeholder="Jawaban A">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pilihan B</label>
+          <input type="text" id="soalPilB" class="form-control" placeholder="Jawaban B">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pilihan C</label>
+          <input type="text" id="soalPilC" class="form-control" placeholder="Jawaban C">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pilihan D</label>
+          <input type="text" id="soalPilD" class="form-control" placeholder="Jawaban D">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kunci Jawaban Benar</label>
+          <select id="soalKunciPG" class="form-control" style="max-width: 200px;">
+            <option value="A">Pilihan A</option>
+            <option value="B">Pilihan B</option>
+            <option value="C">Pilihan C</option>
+            <option value="D">Pilihan D</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Benar Salah Container -->
+      <div id="containerBenarSalah" class="hidden">
+        <div class="form-group">
+          <label class="form-label">Kunci Jawaban</label>
+          <select id="soalKunciBS" class="form-control" style="max-width: 200px;">
+            <option value="BENAR">BENAR</option>
+            <option value="SALAH">SALAH</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Isian Singkat Container -->
+      <div id="containerIsianSingkat" class="hidden">
+        <div class="form-group">
+          <label class="form-label">Kunci Jawaban Isian</label>
+          <input type="text" id="soalKunciIsian" class="form-control" placeholder="Tulis jawaban benar (gunakan titik-koma ; untuk alternatif)">
+          <small class="text-muted">Contoh: Jakarta;DKI Jakarta</small>
+        </div>
+      </div>
+
+      <div class="flex gap-3 flex-wrap">
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">Bobot Nilai</label>
+          <input type="number" id="soalBobotInput" class="form-control" value="1" min="1">
+        </div>
+        <div class="form-group" style="flex:3;">
+          <label class="form-label">Pembahasan Soal (Opsional)</label>
+          <input type="text" id="soalPembahasanInput" class="form-control" placeholder="Penjelasan cara penyelesaian">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalSoal')">Batal</button>
+        <button class="btn btn-primary" onclick="bankSoal.save()">Simpan Soal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Pratinjau Soal -->
+  <div id="modalPreviewSoal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Pratinjau Tampilan Soal</h3>
+        <button class="modal-close" onclick="app.closeModal('modalPreviewSoal')">&times;</button>
+      </div>
+      <div id="previewSoalBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalPreviewSoal')">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Impor Soal CSV -->
+  <div id="modalImportSoal" class="modal-overlay hidden">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">Impor Soal Excel / CSV</h3>
+        <button class="modal-close" onclick="app.closeModal('modalImportSoal')">&times;</button>
+      </div>
+      <p class="text-muted" style="font-size: 13px; margin-bottom: 12px;">
+        Gunakan template resmi untuk mengimpor soal secara massal.
+      </p>
+      <div style="margin-bottom: 16px;">
+        <button class="btn btn-secondary btn-sm" onclick="bankSoal.downloadTemplate()">📄 Unduh Template Soal (.CSV)</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Pilih File CSV</label>
+        <input type="file" id="soalCsvFileInput" accept=".csv" class="form-control" onchange="bankSoal.handleFileSelected(event)">
+      </div>
+      <div id="soalImportPreviewArea" class="hidden">
+        <h4 style="font-size: 14px; font-weight: 700; margin-top: 14px;">Hasil Analisis File:</h4>
+        <p id="soalImportSummary" style="font-size: 13px; margin: 6px 0;"></p>
+        <div class="table-responsive" style="max-height: 250px;">
+          <table class="data-table" style="font-size: 12px;">
+            <thead>
+              <tr>
+                <th>Mapel</th>
+                <th>Jenis</th>
+                <th>Pertanyaan</th>
+                <th>Kunci</th>
+              </tr>
+            </thead>
+            <tbody id="soalImportPreviewRows"></tbody>
+          </table>
+        </div>
+        <div id="soalImportErrorArea" style="margin-top: 10px; color: var(--accent-red); font-size: 12px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalImportSoal')">Batal</button>
+        <button class="btn btn-primary" id="btnCommitImportSoal" disabled onclick="bankSoal.commitImport()">Konfirmasi & Simpan ke Bank Soal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Editor Paket Latihan -->
+  <div id="modalPaket" class="modal-overlay hidden">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalPaketTitle">Buat Paket Latihan</h3>
+        <button class="modal-close" onclick="app.closeModal('modalPaket')">&times;</button>
+      </div>
+      <input type="hidden" id="paketIdInput">
+      
+      <div class="form-group">
+        <label class="form-label">Judul Latihan <span class="text-danger">*</span></label>
+        <input type="text" id="paketJudulInput" class="form-control" placeholder="Contoh: Latihan Harian Matematika Bab 1">
+      </div>
+
+      <div class="flex gap-3 flex-wrap">
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">Mata Pelajaran</label>
+          <select id="paketMapelInput" class="form-control">
+            <option value="Matematika">Matematika</option>
+            <option value="IPA">IPA</option>
+            <option value="IPS">IPS</option>
+            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+            <option value="PPKn">PPKn</option>
+            <option value="Umum">Umum</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">Tingkat</label>
+          <select id="paketTingkatInput" class="form-control">
+            <option value="1">Kelas 1</option>
+            <option value="2">Kelas 2</option>
+            <option value="3">Kelas 3</option>
+            <option value="4">Kelas 4</option>
+            <option value="5">Kelas 5</option>
+            <option value="6" selected>Kelas 6</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">Durasi (Menit)</label>
+          <input type="number" id="paketDurasiInput" class="form-control" value="30" min="0">
+          <small class="text-muted">0 = tanpa batas waktu</small>
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">Maks Percobaan</label>
+          <input type="number" id="paketPercobaanInput" class="form-control" value="1" min="1">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Petunjuk Pengerjaan</label>
+        <input type="text" id="paketPetunjukInput" class="form-control" value="Kerjakan soal dengan teliti dan pilih jawaban yang paling tepat.">
+      </div>
+
+      <div class="card" style="padding: 14px; background:#f8fafc; margin-bottom: 16px;">
+        <h4 style="font-size: 14px; font-weight:700; margin-bottom: 8px;">Pengaturan Kuis & Visibilitas</h4>
+        <div class="flex flex-wrap gap-4">
+          <label class="flex items-center gap-2" style="font-size: 13px; cursor: pointer;">
+            <input type="checkbox" id="paketAcakSoal"> Acak Urutan Soal
+          </label>
+          <label class="flex items-center gap-2" style="font-size: 13px; cursor: pointer;">
+            <input type="checkbox" id="paketAcakPilihan"> Acak Pilihan PG
+          </label>
+          <label class="flex items-center gap-2" style="font-size: 13px; cursor: pointer;">
+            <input type="checkbox" id="paketTampilkanNilai" checked> Siswa Bisa Lihat Nilai
+          </label>
+          <label class="flex items-center gap-2" style="font-size: 13px; cursor: pointer;">
+            <input type="checkbox" id="paketTampilkanKunci"> Siswa Bisa Lihat Kunci
+          </label>
+          <label class="flex items-center gap-2" style="font-size: 13px; cursor: pointer;">
+            <input type="checkbox" id="paketTampilkanPembahasan"> Siswa Bisa Lihat Pembahasan
+          </label>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 16px;">
+        <div class="flex justify-between items-center" style="margin-bottom: 12px;">
+          <h4 style="font-size: 14px; font-weight:700;">Pilih Soal dari Bank Soal (<span id="selectedSoalCount">0</span> dipilih)</h4>
+          <input type="text" id="paketSoalPickerSearch" placeholder="Cari soal..." class="form-control" style="max-width:220px;" oninput="paketLatihan.filterPicker()">
+        </div>
+        <div class="table-responsive" style="max-height: 250px;">
+          <table class="data-table" style="font-size: 13px;">
+            <thead>
+              <tr>
+                <th style="width: 30px;"><input type="checkbox" id="checkAllPickerSoal" onchange="paketLatihan.toggleSelectAllPicker(this)"></th>
+                <th>Pertanyaan</th>
+                <th>Jenis</th>
+                <th>Bobot</th>
+              </tr>
+            </thead>
+            <tbody id="paketSoalPickerBody">
+              <tr><td colspan="4" class="text-center text-muted">Memuat daftar soal...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalPaket')">Batal</button>
+        <button class="btn btn-primary" onclick="paketLatihan.save()">Simpan Paket</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Buat Token Siswa -->
+  <div id="modalToken" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Buat Token Akses Siswa</h3>
+        <button class="modal-close" onclick="app.closeModal('modalToken')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Pilih Paket Latihan <span class="text-danger">*</span></label>
+        <select id="tokenPaketSelect" class="form-control"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Batasi Khusus Kelas Tertentu (Opsional)</label>
+        <select id="tokenKelasSelect" class="form-control">
+          <option value="">Akses Umum (Semua Siswa)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Berlaku Sampai (Opsional)</label>
+        <input type="datetime-local" id="tokenBerlakuSampai" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Batas Kuota Peserta (0 = tanpa batas)</label>
+        <input type="number" id="tokenBatasPeserta" class="form-control" value="0" min="0">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalToken')">Batal</button>
+        <button class="btn btn-primary" onclick="tokenSiswa.save()">Generate Token</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Detail Jawaban Siswa untuk Guru -->
+  <div id="modalDetailHasil" class="modal-overlay hidden">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="detailHasilTitle">Lembar Jawaban Siswa</h3>
+        <button class="modal-close" onclick="app.closeModal('modalDetailHasil')">&times;</button>
+      </div>
+      <div id="detailHasilHeaderCard" class="card" style="padding: 14px; background:#f8fafc; margin-bottom: 16px;"></div>
+      <div id="detailHasilList"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalDetailHasil')">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts JavaScript (Path Relatif Kompatibel dengan GitHub Pages) -->
+  <script src="./assets/js/api.js"></script>
+  <script src="./assets/js/auth.js"></script>
+  <script src="./assets/js/dashboard.js"></script>
+  <script src="./assets/js/kelas.js"></script>
+  <script src="./assets/js/bank-soal.js"></script>
+  <script src="./assets/js/paket-latihan.js"></script>
+  <script src="./assets/js/token-siswa.js"></script>
+  <script src="./assets/js/hasil-rekap.js"></script>
+  <script src="./assets/js/app.js"></script>
+</body>
+</html>
