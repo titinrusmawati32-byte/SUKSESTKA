@@ -230,71 +230,13 @@ const app = (function() {
 
   /* --- Pengaturan Akun & Sistem --- */
   function loadPengaturanView() {
-    checkFirebaseStatusUI();
+    // Pengaturan sistem & kredensial backend/Firebase berjalan di belakang layar
   }
 
   function clearLocalCache() {
     if (typeof cacheService !== 'undefined') {
       cacheService.clearAll();
       showToast('Seluruh cache aplikasi berhasil dibersihkan!', 'success', 3000);
-    }
-  }
-
-  function checkFirebaseStatusUI() {
-    const badge = document.getElementById('badgeFirebaseStatus');
-    const inputProj = document.getElementById('cfgFirebaseProjectId');
-    const inputKey = document.getElementById('cfgFirebaseApiKey');
-
-    if (typeof firebaseConfig !== 'undefined') {
-      const cfg = firebaseConfig.getConfig();
-      if (inputProj && !inputProj.value) inputProj.value = cfg.projectId || '';
-      if (inputKey && !inputKey.value) inputKey.value = cfg.apiKey ? '••••••••••••••••••••' : '';
-
-      if (firebaseConfig.isConfigured()) {
-        if (typeof firebaseService !== 'undefined' && firebaseService.init()) {
-          if (badge) {
-            badge.className = 'badge badge-success';
-            badge.textContent = 'Terhubung & Aktif (Firestore)';
-          }
-        } else {
-          if (badge) {
-            badge.className = 'badge badge-warning';
-            badge.textContent = 'Dikonfigurasi (Offline/Standby)';
-          }
-        }
-      } else {
-        if (badge) {
-          badge.className = 'badge badge-secondary';
-          badge.textContent = 'Standby (GAS Backend SSOT)';
-        }
-      }
-    }
-  }
-
-  function saveFirebaseConfigFromUI() {
-    const projId = document.getElementById('cfgFirebaseProjectId')?.value.trim();
-    const apiKey = document.getElementById('cfgFirebaseApiKey')?.value.trim();
-
-    if (!projId || !apiKey || apiKey.includes('••••')) {
-      showToast('Silakan masukkan Project ID dan API Key Firebase yang valid.', 'warning', 4000);
-      return;
-    }
-
-    try {
-      if (typeof firebaseConfig !== 'undefined') {
-        const current = firebaseConfig.getConfig();
-        firebaseConfig.saveCustomConfig({
-          ...current,
-          projectId: projId,
-          apiKey: apiKey,
-          authDomain: `${projId}.firebaseapp.com`,
-          storageBucket: `${projId}.appspot.com`
-        });
-        showToast('Konfigurasi Firebase berhasil disimpan!', 'success', 4000);
-        checkFirebaseStatusUI();
-      }
-    } catch (err) {
-      showToast('Gagal menyimpan: ' + err.message, 'error', 4000);
     }
   }
 
@@ -433,8 +375,6 @@ const app = (function() {
     formatDriveImageUrl,
     fixDriveImages,
     clearLocalCache,
-    checkFirebaseStatusUI,
-    saveFirebaseConfigFromUI,
     handlePasswordChangeSubmit,
     runDatabaseSetupVerification,
     openTeacherLoginModal,

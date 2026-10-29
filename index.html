@@ -624,8 +624,8 @@
           </div>
 
           <div class="card" style="max-width: 650px; margin-top: 20px;">
-            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Integritas Database Google Sheets & Media Drive</h3>
-            <p class="text-muted" style="font-size: 13px; margin-bottom: 12px;">Verifikasi bahwa 10 sheet database, folder Google Drive Media, dan URL gambar soal siap digunakan.</p>
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Integritas Database Google Sheets</h3>
+            <p class="text-muted" style="font-size: 13px; margin-bottom: 12px;">Verifikasi bahwa 10 sheet database dan folder Google Drive Media siap digunakan.</p>
             <div class="flex gap-2 flex-wrap">
               <button class="btn btn-secondary" onclick="app.runDatabaseSetupVerification()">
                 <span>🔄</span> Jalankan Verifikasi Database
@@ -633,50 +633,6 @@
               <button class="btn btn-secondary" onclick="app.fixDriveImages()">
                 <span>🖼️</span> Perbaiki Izin & URL Gambar Drive
               </button>
-            </div>
-          </div>
-
-          <!-- Kartu Manajemen Cache & Performa -->
-          <div class="card" style="max-width: 650px; margin-top: 20px;">
-            <div class="flex items-center justify-between" style="margin-bottom: 12px;">
-              <h3 style="font-size: 18px; font-weight: 700;">⚡ Optimasi Performa & Cache</h3>
-              <span class="badge badge-success" id="badgeCacheStatus">Aktif (In-Memory + Web Storage)</span>
-            </div>
-            <p class="text-muted" style="font-size: 13px; margin-bottom: 14px;">
-              Sistem multi-tier cache cerdas otomatis mempercepat navigasi dan mengurangi request ke Google Sheets. Jika data baru belum muncul, Anda dapat mengosongkan cache kapan saja.
-            </p>
-            <div class="flex gap-2 flex-wrap items-center">
-              <button class="btn btn-warning btn-sm" onclick="app.clearLocalCache()">
-                <span>🧹</span> Bersihkan Cache Aplikasi
-              </button>
-              <button class="btn btn-secondary btn-sm" onclick="dashboard.refresh(); app.showToast('Data dashboard berhasil diperbarui!', 'success');">
-                <span>🔄</span> Segarkan Data Dashboard
-              </button>
-            </div>
-          </div>
-
-          <!-- Kartu Firebase Cloud Firestore (Layanan Pendukung) -->
-          <div class="card" style="max-width: 650px; margin-top: 20px;">
-            <div class="flex items-center justify-between" style="margin-bottom: 12px;">
-              <h3 style="font-size: 18px; font-weight: 700;">🔥 Layanan Pendukung Firebase</h3>
-              <span class="badge badge-secondary" id="badgeFirebaseStatus">Memeriksa...</span>
-            </div>
-            <p class="text-muted" style="font-size: 13px; margin-bottom: 14px;">
-              Firebase digunakan sebagai cache metadata sekunder & sinkronisasi real-time. Jika belum dikonfigurasi, sistem tetap beroperasi normal 100% menggunakan Google Apps Script & Google Sheets.
-            </p>
-            <div id="firebaseConfigContainer">
-              <div class="form-group">
-                <label class="form-label" style="font-size: 12px;">Firebase Project ID (Opsional)</label>
-                <input type="text" id="cfgFirebaseProjectId" class="form-control" placeholder="your-firebase-project-id" style="font-size: 13px;">
-              </div>
-              <div class="form-group">
-                <label class="form-label" style="font-size: 12px;">Firebase Web API Key (Opsional)</label>
-                <input type="text" id="cfgFirebaseApiKey" class="form-control" placeholder="AIzaSy..." style="font-size: 13px;">
-              </div>
-              <div class="flex gap-2 flex-wrap">
-                <button class="btn btn-primary btn-sm" onclick="app.saveFirebaseConfigFromUI()">Simpan Konfigurasi Firebase</button>
-                <button class="btn btn-secondary btn-sm" onclick="app.checkFirebaseStatusUI()">Uji Status Koneksi</button>
-              </div>
             </div>
           </div>
         </div>
