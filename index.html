@@ -61,17 +61,18 @@
        PORTAL GURU (DASHBOARD, KELAS, BANK SOAL, PAKET, TOKEN, HASIL)
        ======================================================================== -->
   <div id="teacher-container" class="teacher-wrapper hidden">
-    <!-- Sidebar Guru (Dock Kiri Elegan seperti Referensi) -->
+    <!-- Sidebar Guru (Dock Kiri Elegan - Desain Dark Navy & Maskot Guru) -->
     <aside class="teacher-sidebar" id="teacherSidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">
           <div class="logo-icon-wrap">🎒</div>
           <div>
             <div class="logo-title">Guru Pintar</div>
-            <div class="logo-subtitle">LMS Soal SD</div>
+            <div class="logo-subtitle">LMS SOAL SD</div>
           </div>
         </div>
       </div>
+
       <ul class="sidebar-menu">
         <li class="sidebar-item active" data-view="dashboard">
           <a href="javascript:void(0)" onclick="app.switchTeacherView('dashboard')">
@@ -81,19 +82,19 @@
         </li>
         <li class="sidebar-item" data-view="kelas">
           <a href="javascript:void(0)" onclick="app.switchTeacherView('kelas')">
-            <span class="sidebar-icon">🏫</span>
+            <span class="sidebar-icon">👥</span>
             <span class="sidebar-label">Kelas & Siswa</span>
           </a>
         </li>
         <li class="sidebar-item" data-view="banksoal">
           <a href="javascript:void(0)" onclick="app.switchTeacherView('banksoal')">
-            <span class="sidebar-icon">📚</span>
+            <span class="sidebar-icon">📑</span>
             <span class="sidebar-label">Bank Soal</span>
           </a>
         </li>
         <li class="sidebar-item" data-view="paket">
           <a href="javascript:void(0)" onclick="app.switchTeacherView('paket')">
-            <span class="sidebar-icon">📝</span>
+            <span class="sidebar-icon">📄</span>
             <span class="sidebar-label">Paket Latihan</span>
           </a>
         </li>
@@ -116,10 +117,58 @@
           </a>
         </li>
       </ul>
-      <div class="sidebar-footer">
-        <button class="btn-logout-pill" onclick="auth.logout()">
-          <span>🚪</span> Keluar Akun
-        </button>
+
+      <!-- Maskot Guru & Pesan Cerdas -->
+      <div class="sidebar-mascot-card">
+        <div class="mascot-speech-bubble">
+          Bersama Membangun Generasi Cerdas 💖
+        </div>
+        <div class="mascot-img-wrap">
+          <svg class="mascot-svg" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="80" cy="80" r="72" fill="url(#mascotBgGrad)" opacity="0.25"/>
+            <!-- Teacher Outfit & Body -->
+            <path d="M42 155 C42 118 60 106 80 106 C100 106 118 118 118 155 Z" fill="#92400e"/>
+            <path d="M56 112 L80 148 L104 112 Z" fill="#ffffff"/>
+            <path d="M72 118 L80 150 L88 118 Z" fill="#3b82f6"/>
+            <!-- Binder / Notebook in Left Arm -->
+            <rect x="42" y="120" width="22" height="30" rx="4" fill="#0284c7" transform="rotate(-15 42 120)"/>
+            <rect x="45" y="122" width="16" height="26" rx="2" fill="#e0f2fe" transform="rotate(-15 45 122)"/>
+            <!-- Neck & Face -->
+            <rect x="74" y="88" width="12" height="18" rx="6" fill="#fcd34d"/>
+            <circle cx="80" cy="65" r="28" fill="#fcd34d"/>
+            <!-- Hair & Ponytail -->
+            <path d="M52 62 C52 38 68 32 86 34 C104 36 110 48 108 66 C102 58 96 50 80 50 C65 50 56 56 52 62 Z" fill="#1f2937"/>
+            <path d="M44 52 C36 56 32 70 40 80 C44 84 48 80 48 74 C48 66 46 58 44 52 Z" fill="#1f2937"/>
+            <circle cx="50" cy="62" r="5" fill="#f43f5e"/>
+            <!-- Eyes & Cheeks -->
+            <ellipse cx="72" cy="64" rx="3" ry="4" fill="#1f2937"/>
+            <ellipse cx="88" cy="64" rx="3" ry="4" fill="#1f2937"/>
+            <circle cx="73" cy="63" r="1.2" fill="#ffffff"/>
+            <circle cx="89" cy="63" r="1.2" fill="#ffffff"/>
+            <ellipse cx="67" cy="71" rx="4" ry="2.5" fill="#f87171" opacity="0.6"/>
+            <ellipse cx="93" cy="71" rx="4" ry="2.5" fill="#f87171" opacity="0.6"/>
+            <path d="M74 74 Q80 81 86 74" stroke="#b91c1c" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <!-- Right Arm Pointing Up -->
+            <path d="M110 115 L124 88 C125 85 129 86 129 90 L123 118 Z" fill="#fcd34d"/>
+            <circle cx="126" cy="85" r="4.5" fill="#fcd34d"/>
+            <defs>
+              <linearGradient id="mascotBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#38bdf8"/>
+                <stop offset="100%" stop-color="#6366f1"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+
+      <!-- User Profile Pill Footer -->
+      <div class="sidebar-user-pill">
+        <div class="user-pill-avatar">👩‍🏫</div>
+        <div class="user-pill-info">
+          <span class="user-pill-greeting">Selamat datang,</span>
+          <span class="user-pill-name" id="sidebarTeacherName">Guru</span>
+        </div>
+        <button class="user-pill-arrow" onclick="auth.logout()" title="Keluar Akun">🚪</button>
       </div>
     </aside>
 
@@ -128,14 +177,14 @@
       <header class="teacher-header">
         <div class="header-left">
           <button class="mobile-menu-btn" onclick="app.toggleSidebar()">☰</button>
+          <div class="header-avatar-badge">
+            <span>👩‍🏫</span>
+          </div>
           <div>
             <h1 class="header-greeting">
-              Selamat Datang, <span id="teacherGreeting">Bpk/Ibu Guru</span> 👋
+              Selamat Datang, <span id="teacherGreeting">Ibu Guru</span> 👋
             </h1>
-            <div class="header-subtitle-wrap">
-              <span id="teacherPageTitle" class="header-subtitle">Dashboard Utama</span>
-              <span class="header-subtitle-arrow">⌄</span>
-            </div>
+            <p class="header-subtitle"><span id="teacherPageTitle">Dashboard Utama</span> • LMS Guru Pintar</p>
           </div>
         </div>
 
@@ -144,241 +193,279 @@
             <span>🔍</span>
             <input type="text" placeholder="Cari di sini..." />
           </div>
-          <button class="top-icon-btn" title="Bantuan" onclick="app.showToast('Pilih menu di sidebar untuk mengelola latihan soal siswa.', 'info')">
-            <span>❓</span>
+          <button class="top-notif-btn" title="Notifikasi" onclick="app.showToast('Tidak ada notifikasi baru saat ini.', 'info')">
+            <span>🔔</span>
+            <span class="notif-badge">3</span>
           </button>
-          <div class="top-profile-pill">
-            <div class="profile-avatar">
-              <span>👨‍🏫</span>
-              <span class="online-status-dot"></span>
-            </div>
-            <span class="profile-role">Guru</span>
+          <div class="top-profile-pill" onclick="app.switchTeacherView('pengaturan')">
+            <div class="profile-avatar">👩‍🏫</div>
+            <span class="profile-role">Guru ⌄</span>
           </div>
         </div>
       </header>
 
       <div class="teacher-content">
-        <!-- 1. DASHBOARD VIEW (Persis Struktur Referensi Desain) -->
+        <!-- 1. DASHBOARD VIEW (Persis Mockup Referensi) -->
         <div id="view-dashboard" class="t-view">
 
-          <!-- Section 1: Bills / Ringkasan Kartu Utama dengan Tab Aksen -->
-          <div class="section-header">
-            <div class="section-title-wrap">
-              <h2 class="section-title">Ringkasan Utama</h2>
-              <span class="section-subtitle">Statistik pembelajaran dan bank soal aktif</span>
+          <!-- BANNER HERO LANGIT BIRU CERIA ("SEMANGAT BELAJAR") -->
+          <div class="dashboard-hero-banner">
+            <div class="hero-banner-content">
+              <span class="hero-banner-tag">SEMANGAT BELAJAR</span>
+              <h2 class="hero-banner-title">Raih Cita-citamu, Jadi Anak Hebat!</h2>
+              <p class="hero-banner-desc">Dengan latihan soal yang tepat, kamu bisa mencapai hasil terbaik. Terus semangat ya!</p>
             </div>
-            <span class="section-toggle">⌄</span>
-          </div>
+            <div class="hero-banner-illustration">
+              <div class="hero-banner-badge">Belajar Hari Ini Untuk Masa Depan 💖</div>
+              <svg class="hero-kids-svg" viewBox="0 0 240 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Background Cloud & School -->
+                <ellipse cx="60" cy="50" rx="35" ry="16" fill="rgba(255,255,255,0.3)"/>
+                <ellipse cx="180" cy="40" rx="40" ry="18" fill="rgba(255,255,255,0.25)"/>
+                <rect x="20" y="70" width="55" height="45" rx="4" fill="rgba(255,255,255,0.85)"/>
+                <polygon points="15,70 47.5,45 80,70" fill="#e11d48"/>
+                <rect x="42" y="55" width="11" height="15" fill="#f8fafc"/>
+                <circle cx="47.5" cy="62" r="3" fill="#3b82f6"/>
 
-          <div class="stat-grid-ref">
-            <!-- Card 1: Total Kelas -->
-            <div class="clay-stat-card card-accent-blue">
-              <div class="stat-card-top">
-                <div class="stat-card-icon-pill icon-blue">🏫</div>
-                <div class="stat-card-badge badge-pill-blue">+100% Siap</div>
-              </div>
-              <div class="stat-card-middle">
-                <span class="stat-sublabel">Total Kelas</span>
-                <div class="stat-main-number" id="dashTotalKelas">0</div>
-              </div>
-              <div class="stat-card-footer">
-                <span class="text-muted-xs">Kelas aktif terdaftar</span>
-              </div>
-              <div class="card-edge-tab tab-blue"></div>
-            </div>
+                <!-- Boy Student (Left) -->
+                <rect x="95" y="75" width="34" height="45" rx="8" fill="#ffffff"/>
+                <rect x="98" y="105" width="28" height="25" rx="4" fill="#e11d48"/>
+                <polygon points="110,80 114,80 112,94" fill="#e11d48"/>
+                <circle cx="112" cy="55" r="16" fill="#fcd34d"/>
+                <path d="M96 52 C96 38 106 36 118 36 C128 36 130 46 128 54 C122 48 116 46 104 48 Z" fill="#1f2937"/>
+                <ellipse cx="107" cy="54" rx="2" ry="2.5" fill="#1f2937"/>
+                <ellipse cx="117" cy="54" rx="2" ry="2.5" fill="#1f2937"/>
+                <path d="M108 61 Q112 66 116 61" stroke="#b91c1c" stroke-width="2" stroke-linecap="round"/>
+                <path d="M96 82 L84 62 C82 58 86 56 89 59 L100 78 Z" fill="#fcd34d"/>
+                <circle cx="83" cy="59" r="4.5" fill="#fcd34d"/>
 
-            <!-- Card 2: Paket Aktif -->
-            <div class="clay-stat-card card-accent-cyan">
-              <div class="stat-card-top">
-                <div class="stat-card-icon-pill icon-cyan">📝</div>
-                <div class="stat-card-badge badge-pill-cyan">Terbit</div>
-              </div>
-              <div class="stat-card-middle">
-                <span class="stat-sublabel">Paket Aktif</span>
-                <div class="stat-main-number" id="dashPaketAktif">0</div>
-              </div>
-              <div class="stat-card-footer">
-                <span class="text-muted-xs">Siap dikerjakan siswa</span>
-              </div>
-              <div class="card-edge-tab tab-cyan"></div>
-            </div>
-
-            <!-- Card 3: Soal di Bank -->
-            <div class="clay-stat-card card-accent-amber">
-              <div class="stat-card-top">
-                <div class="stat-card-icon-pill icon-amber">📚</div>
-                <div class="stat-card-badge badge-pill-amber">Tersedia</div>
-              </div>
-              <div class="stat-card-middle">
-                <span class="stat-sublabel">Soal di Bank</span>
-                <div class="stat-main-number" id="dashTotalSoal">0</div>
-              </div>
-              <div class="stat-card-footer">
-                <span class="text-muted-xs">Koleksi bank soal</span>
-              </div>
-              <div class="card-edge-tab tab-amber"></div>
-            </div>
-
-            <!-- Card 4: Siswa Mengerjakan -->
-            <div class="clay-stat-card card-accent-green">
-              <div class="stat-card-top">
-                <div class="stat-card-icon-pill icon-green">🎯</div>
-                <div class="stat-card-badge badge-pill-green">Aktif</div>
-              </div>
-              <div class="stat-card-middle">
-                <span class="stat-sublabel">Siswa Mengerjakan</span>
-                <div class="stat-main-number" id="dashTotalPengerjaan">0</div>
-              </div>
-              <div class="stat-card-footer">
-                <span class="text-muted-xs">Total sesi pengerjaan</span>
-              </div>
-              <div class="card-edge-tab tab-green"></div>
+                <!-- Girl Student (Right) -->
+                <rect x="142" y="75" width="34" height="45" rx="8" fill="#ffffff"/>
+                <rect x="145" y="105" width="28" height="25" rx="4" fill="#e11d48"/>
+                <polygon points="157,80 161,80 159,94" fill="#e11d48"/>
+                <circle cx="159" cy="55" r="16" fill="#fcd34d"/>
+                <path d="M143 54 C143 38 153 36 165 36 C175 36 177 46 175 56 C169 48 163 46 151 48 Z" fill="#1f2937"/>
+                <path d="M138 46 C134 48 132 58 138 64 C140 60 140 52 138 46 Z" fill="#1f2937"/>
+                <path d="M180 46 C184 48 186 58 180 64 C178 60 178 52 180 46 Z" fill="#1f2937"/>
+                <circle cx="140" cy="52" r="3" fill="#e11d48"/>
+                <circle cx="178" cy="52" r="3" fill="#e11d48"/>
+                <ellipse cx="154" cy="54" rx="2" ry="2.5" fill="#1f2937"/>
+                <ellipse cx="164" cy="54" rx="2" ry="2.5" fill="#1f2937"/>
+                <path d="M155 61 Q159 66 163 61" stroke="#b91c1c" stroke-width="2" stroke-linecap="round"/>
+                <path d="M174 82 L186 62 C188 58 184 56 181 59 L170 78 Z" fill="#fcd34d"/>
+                <circle cx="187" cy="59" r="4.5" fill="#fcd34d"/>
+              </svg>
             </div>
           </div>
 
-          <!-- Section 2: Invoices / Hero Purple Card + Aksi Cepat + Bar Chart -->
-          <div class="section-header" style="margin-top: 24px;">
-            <div class="section-title-wrap">
-              <h2 class="section-title">Performa & Evaluasi</h2>
-              <span class="section-subtitle">Tingkat capaian nilai dan tindakan cepat</span>
+          <!-- 5 KARTU STATISTIK (SESUAI MOCKUP 5 KOLOM) -->
+          <div class="stat-cards-row">
+            <!-- 1. Total Kelas -->
+            <div class="modern-stat-card" onclick="app.switchTeacherView('kelas')">
+              <div class="stat-card-icon stat-icon-blue">👥</div>
+              <div class="stat-card-label">Total Kelas</div>
+              <div class="stat-card-number" id="dashTotalKelas">0</div>
+              <div class="stat-card-foot">
+                <span>Kelas aktif terdaftar</span>
+                <span class="stat-card-arrow stat-arrow-blue">→</span>
+              </div>
             </div>
-            <span class="section-toggle">⌄</span>
+
+            <!-- 2. Paket Aktif -->
+            <div class="modern-stat-card" onclick="app.switchTeacherView('paket')">
+              <div class="stat-card-icon stat-icon-green">📄</div>
+              <div class="stat-card-label">Paket Aktif</div>
+              <div class="stat-card-number" id="dashPaketAktif">0</div>
+              <div class="stat-card-foot">
+                <span>Siap dikerjakan siswa</span>
+                <span class="stat-card-arrow stat-arrow-green">→</span>
+              </div>
+            </div>
+
+            <!-- 3. Soal di Bank -->
+            <div class="modern-stat-card" onclick="app.switchTeacherView('banksoal')">
+              <div class="stat-card-icon stat-icon-yellow">📑</div>
+              <div class="stat-card-label">Soal di Bank</div>
+              <div class="stat-card-number" id="dashTotalSoal">0</div>
+              <div class="stat-card-foot">
+                <span>Koleksi bank soal</span>
+                <span class="stat-card-arrow stat-arrow-yellow">→</span>
+              </div>
+            </div>
+
+            <!-- 4. Siswa Mengerjakan -->
+            <div class="modern-stat-card" onclick="app.switchTeacherView('hasil')">
+              <div class="stat-card-icon stat-icon-pink">🎯</div>
+              <div class="stat-card-label">Siswa Mengerjakan</div>
+              <div class="stat-card-number" id="dashTotalPengerjaan">0</div>
+              <div class="stat-card-foot">
+                <span>Total sesi pengerjaan</span>
+                <span class="stat-card-arrow stat-arrow-pink">→</span>
+              </div>
+            </div>
+
+            <!-- 5. Rata-rata Nilai -->
+            <div class="modern-stat-card" onclick="app.switchTeacherView('hasil')">
+              <div class="stat-card-icon stat-icon-purple">📊</div>
+              <div class="stat-card-label">Rata-rata Nilai</div>
+              <div class="stat-card-number" id="dashRataRata">0</div>
+              <div class="stat-card-foot">
+                <span>Nilai keseluruhan</span>
+                <span class="stat-card-arrow stat-arrow-purple">→</span>
+              </div>
+            </div>
           </div>
 
-          <div class="dashboard-hero-row">
-            <!-- HERO PURPLE CARD DENGAN SPEEDOMETER GAUGE -->
-            <div class="hero-purple-card">
-              <div class="hero-card-header">
-                <span class="hero-badge">Rata-rata Nilai</span>
-                <button class="hero-menu-dots">⋮</button>
+          <!-- BAGIAN TENGAH 3 KOLOM: SPEEDOMETER UNGU + BAR CHART + AKSI CEPAT -->
+          <div class="dashboard-middle-grid">
+            <!-- Kolom 1: Purple Gradient Gauge Card -->
+            <div class="middle-purple-card">
+              <div class="purple-card-header">
+                <span class="purple-card-badge">Rata-rata Nilai</span>
               </div>
-
-              <div class="hero-gauge-wrap">
-                <svg class="hero-gauge-svg" viewBox="0 0 160 90">
-                  <path d="M 20 80 A 60 60 0 0 1 140 80" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="14" stroke-linecap="round"/>
-                  <path d="M 20 80 A 60 60 0 0 1 125 45" fill="none" stroke="url(#heroGaugeGrad)" stroke-width="14" stroke-linecap="round"/>
+              <div class="purple-gauge-container">
+                <svg class="purple-gauge-svg" viewBox="0 0 180 110">
+                  <path d="M 25 95 A 65 65 0 0 1 155 95" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="14" stroke-linecap="round"/>
+                  <path d="M 25 95 A 65 65 0 0 1 142 55" fill="none" stroke="url(#gaugeCyanGrad)" stroke-width="14" stroke-linecap="round"/>
                   <defs>
-                    <linearGradient id="heroGaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stop-color="#38ef7d"/>
-                      <stop offset="50%" stop-color="#11998e"/>
-                      <stop offset="100%" stop-color="#ffffff"/>
+                    <linearGradient id="gaugeCyanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="#38bdf8"/>
+                      <stop offset="100%" stop-color="#06b6d4"/>
                     </linearGradient>
                   </defs>
                 </svg>
-                <div class="hero-gauge-value">
-                  <span id="dashRataRata">0</span>
-                  <span class="hero-gauge-unit">Rata-Rata</span>
+                <div class="purple-gauge-center">
+                  <span class="purple-gauge-val" id="dashHeroGaugeVal">82.5</span>
+                  <span class="purple-gauge-unit">RATA-RATA</span>
                 </div>
               </div>
-
-              <div class="hero-card-body">
-                <div class="hero-stat-label">Capaian Skor Siswa</div>
-                <div class="hero-stat-desc">Akumulasi hasil seluruh paket latihan</div>
+              <div class="purple-card-footer">
+                <span>Terus tingkatkan prestasi siswa! 📈</span>
               </div>
             </div>
 
-            <!-- KARTU AKSI CEPAT & STATUS -->
-            <div class="hero-side-cards">
-              <div class="clay-stat-card quick-action-clay-card">
-                <div class="flex items-center justify-between" style="margin-bottom: 12px;">
-                  <div class="flex items-center gap-2">
-                    <span style="font-size: 18px;">⚡</span>
-                    <span style="font-weight: 800; font-size: 14px;">Aksi Cepat</span>
-                  </div>
-                  <span class="stat-card-badge badge-pill-cyan">Guru</span>
+            <!-- Kolom 2: Performa & Evaluasi Bar Chart -->
+            <div class="middle-chart-card">
+              <div class="chart-card-top">
+                <div>
+                  <h3 class="chart-card-title">Performa & Evaluasi</h3>
+                  <p class="chart-card-subtitle">Tingkat capaian nilai dan tinjauan cepat</p>
                 </div>
-                <div class="flex flex-col gap-2">
-                  <button class="btn btn-primary btn-pill-action" onclick="bankSoal.openModal()">
-                    <span>➕</span> Buat Soal Baru
-                  </button>
-                  <button class="btn btn-success btn-pill-action" onclick="paketLatihan.openModal()">
-                    <span>📝</span> Buat Paket Latihan
-                  </button>
-                  <button class="btn btn-secondary btn-pill-action" onclick="kelas.openModal()">
-                    <span>🏫</span> Tambah Kelas Baru
-                  </button>
+                <div class="chart-filter-pill">
+                  <span>7 Hari Terakhir</span> <span>⌄</span>
                 </div>
               </div>
+              <div class="bar-chart-with-axis">
+                <div class="chart-y-axis">
+                  <span>100</span>
+                  <span>75</span>
+                  <span>50</span>
+                  <span>25</span>
+                  <span>0</span>
+                </div>
+                <div class="chart-bars-area">
+                  <div class="chart-grid-line" style="top: 0%;"></div>
+                  <div class="chart-grid-line" style="top: 25%;"></div>
+                  <div class="chart-grid-line" style="top: 50%;"></div>
+                  <div class="chart-grid-line" style="top: 75%;"></div>
+                  <div class="chart-grid-line" style="top: 100%;"></div>
 
-              <div class="clay-stat-card status-mini-card">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <span style="font-size: 20px;">🔑</span>
-                    <div>
-                      <div style="font-weight: 700; font-size: 13px;">Token Akses Siswa</div>
-                      <div class="text-muted-xs">Siap dibagikan ke kelas</div>
+                  <div class="chart-bars-flex">
+                    <div class="bar-item">
+                      <div class="bar-track"><div class="bar-fill" style="height: 48%;"></div></div>
+                      <span class="bar-lbl">Sen</span>
+                    </div>
+                    <div class="bar-item">
+                      <div class="bar-track"><div class="bar-fill" style="height: 68%;"></div></div>
+                      <span class="bar-lbl">Sel</span>
+                    </div>
+                    <div class="bar-item">
+                      <div class="bar-track"><div class="bar-fill" style="height: 56%;"></div></div>
+                      <span class="bar-lbl">Rab</span>
+                    </div>
+                    <div class="bar-item active">
+                      <div class="bar-track"><div class="bar-fill bar-fill-highlight" style="height: 92%;"></div></div>
+                      <span class="bar-lbl bar-lbl-highlight">Kam</span>
+                    </div>
+                    <div class="bar-item">
+                      <div class="bar-track"><div class="bar-fill" style="height: 78%;"></div></div>
+                      <span class="bar-lbl">Jum</span>
+                    </div>
+                    <div class="bar-item">
+                      <div class="bar-track"><div class="bar-fill" style="height: 62%;"></div></div>
+                      <span class="bar-lbl">Sab</span>
+                    </div>
+                    <div class="bar-item">
+                      <div class="bar-track"><div class="bar-fill" style="height: 40%;"></div></div>
+                      <span class="bar-lbl">Min</span>
                     </div>
                   </div>
-                  <button class="btn btn-primary btn-sm" onclick="app.switchTeacherView('token')">Kelola</button>
                 </div>
               </div>
             </div>
 
-            <!-- KARTU BAR CHART AKTIVITAS (Seperti di Referensi) -->
-            <div class="clay-stat-card chart-clay-card">
-              <div class="chart-header">
-                <div>
-                  <div class="chart-month-pill">Aktivitas Latihan</div>
-                  <span class="text-muted-xs">Tren pengerjaan siswa 7 hari terakhir</span>
-                </div>
-                <button class="hero-menu-dots text-muted">⋮</button>
+            <!-- Kolom 3: ⚡ Aksi Cepat -->
+            <div class="middle-actions-card">
+              <div class="actions-card-header">
+                <span class="actions-card-title">⚡ Aksi Cepat</span>
               </div>
+              <div class="actions-list">
+                <button class="action-pill-btn pill-btn-purple" onclick="bankSoal.openModal()">
+                  <div class="pill-btn-left">
+                    <span class="pill-btn-icon">➕</span>
+                    <span class="pill-btn-text">Buat Soal Baru</span>
+                  </div>
+                  <span class="pill-btn-arrow">›</span>
+                </button>
 
-              <div class="chart-bars-wrap">
-                <div class="chart-bar-col">
-                  <div class="chart-bar-fill" style="height: 45%;"></div>
-                  <span class="chart-bar-lbl">Sen</span>
-                </div>
-                <div class="chart-bar-col">
-                  <div class="chart-bar-fill" style="height: 70%;"></div>
-                  <span class="chart-bar-lbl">Sel</span>
-                </div>
-                <div class="chart-bar-col">
-                  <div class="chart-bar-fill" style="height: 55%;"></div>
-                  <span class="chart-bar-lbl">Rab</span>
-                </div>
-                <div class="chart-bar-col">
-                  <div class="chart-bar-fill active" style="height: 95%;"></div>
-                  <span class="chart-bar-lbl font-bold text-primary">Kam</span>
-                </div>
-                <div class="chart-bar-col">
-                  <div class="chart-bar-fill" style="height: 80%;"></div>
-                  <span class="chart-bar-lbl">Jum</span>
-                </div>
-                <div class="chart-bar-col">
-                  <div class="chart-bar-fill" style="height: 60%;"></div>
-                  <span class="chart-bar-lbl">Sab</span>
-                </div>
-                <div class="chart-bar-col">
-                  <div class="chart-bar-fill" style="height: 35%;"></div>
-                  <span class="chart-bar-lbl">Min</span>
-                </div>
+                <button class="action-pill-btn pill-btn-green" onclick="paketLatihan.openModal()">
+                  <div class="pill-btn-left">
+                    <span class="pill-btn-icon">📄</span>
+                    <span class="pill-btn-text">Buat Paket Latihan</span>
+                  </div>
+                  <span class="pill-btn-arrow">›</span>
+                </button>
+
+                <button class="action-pill-btn pill-btn-blue" onclick="kelas.openModal()">
+                  <div class="pill-btn-left">
+                    <span class="pill-btn-icon">👥</span>
+                    <span class="pill-btn-text">Tambah Kelas Baru</span>
+                  </div>
+                  <span class="pill-btn-arrow">›</span>
+                </button>
+
+                <button class="action-pill-btn pill-btn-orange" onclick="app.switchTeacherView('token')">
+                  <div class="pill-btn-left">
+                    <span class="pill-btn-icon">🔑</span>
+                    <span class="pill-btn-text">Token Akses Siswa</span>
+                  </div>
+                  <span class="pill-btn-arrow">›</span>
+                </button>
               </div>
             </div>
           </div>
 
-          <!-- Section 3: History / Aktivitas Siswa Terbaru -->
-          <div class="section-header" style="margin-top: 24px;">
-            <div class="section-title-wrap">
-              <h2 class="section-title">Aktivitas Siswa Terbaru</h2>
-              <span class="section-subtitle">Riwayat pengerjaan latihan yang baru dikumpulkan</span>
+          <!-- BAGIAN BAWAH: AKTIVITAS SISWA TERBARU -->
+          <div class="section-header-flex">
+            <div>
+              <h3 class="recent-title">Aktivitas Siswa Terbaru</h3>
+              <p class="recent-subtitle">Riwayat pengerjaan latihan yang baru dikumpulkan</p>
             </div>
-            <span class="section-toggle">⌄</span>
+            <button class="btn-lihat-semua" onclick="app.switchTeacherView('hasil')">Lihat Semua</button>
           </div>
 
-          <div class="clay-stat-card history-card">
+          <div class="recent-table-card">
             <div class="table-responsive">
-              <table class="data-table ref-table">
+              <table class="recent-styled-table">
                 <thead>
                   <tr>
-                    <th>Nama Siswa</th>
-                    <th>Paket Latihan</th>
-                    <th>Nilai Akhir</th>
-                    <th>Waktu Pengumpulan</th>
+                    <th>NAMA SISWA</th>
+                    <th>PAKET LATIHAN</th>
+                    <th>NILAI AKHIR</th>
+                    <th>WAKTU PENGUMPULAN</th>
                   </tr>
                 </thead>
                 <tbody id="dashRecentTable">
-                  <tr><td colspan="4" class="text-center text-muted">Memuat aktivitas...</td></tr>
+                  <tr><td colspan="4" class="text-center text-muted">Memuat aktivitas terbaru...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1339,6 +1426,61 @@
       <div id="detailHasilList"></div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="app.closeModal('modalDetailHasil')">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       DOCK NAVIGASI BAWAH HP (Mobile Bottom Navigation)
+       Sesuai Mockup Referensi: Posisi Fixed di Bawah Layar HP
+       ======================================================================== -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <button class="mobile-nav-btn active" data-view="dashboard" onclick="app.switchTeacherView('dashboard')">
+      <span class="mobile-nav-icon">🏠</span>
+      <span class="mobile-nav-label">Dashboard</span>
+    </button>
+    <button class="mobile-nav-btn" data-view="kelas" onclick="app.switchTeacherView('kelas')">
+      <span class="mobile-nav-icon">👥</span>
+      <span class="mobile-nav-label">Kelas & Siswa</span>
+    </button>
+    <button class="mobile-nav-btn" data-view="banksoal" onclick="app.switchTeacherView('banksoal')">
+      <span class="mobile-nav-icon">📑</span>
+      <span class="mobile-nav-label">Bank Soal</span>
+    </button>
+    <button class="mobile-nav-btn" data-view="paket" onclick="app.switchTeacherView('paket')">
+      <span class="mobile-nav-icon">📄</span>
+      <span class="mobile-nav-label">Paket Latihan</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="app.toggleMobileMoreSheet()">
+      <span class="mobile-nav-icon">⋯</span>
+      <span class="mobile-nav-label">Lainnya</span>
+    </button>
+  </nav>
+
+  <!-- Bottom Sheet / Drawer untuk "Lainnya" pada HP -->
+  <div id="mobileMoreSheet" class="mobile-more-sheet hidden" onclick="if(event.target === this) app.toggleMobileMoreSheet()">
+    <div class="mobile-sheet-content">
+      <div class="mobile-sheet-header">
+        <span class="mobile-sheet-title">Menu Lainnya</span>
+        <button class="mobile-sheet-close" onclick="app.toggleMobileMoreSheet()">&times;</button>
+      </div>
+      <div class="mobile-sheet-grid">
+        <button class="sheet-item-btn" onclick="app.switchTeacherView('token'); app.toggleMobileMoreSheet();">
+          <span class="sheet-icon">🔑</span>
+          <span>Token Siswa</span>
+        </button>
+        <button class="sheet-item-btn" onclick="app.switchTeacherView('hasil'); app.toggleMobileMoreSheet();">
+          <span class="sheet-icon">📈</span>
+          <span>Hasil & Rekap</span>
+        </button>
+        <button class="sheet-item-btn" onclick="app.switchTeacherView('pengaturan'); app.toggleMobileMoreSheet();">
+          <span class="sheet-icon">⚙️</span>
+          <span>Pengaturan</span>
+        </button>
+        <button class="sheet-item-btn text-danger" onclick="auth.logout()">
+          <span class="sheet-icon">🚪</span>
+          <span>Keluar Akun</span>
+        </button>
       </div>
     </div>
   </div>

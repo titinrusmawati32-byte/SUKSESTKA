@@ -349,25 +349,24 @@ textarea.form-control {
   margin: 0 auto;
 }
 
-/* SIDEBAR DOCK KIRI (Persis di referensi) */
+/* SIDEBAR DOCK KIRI (Persis di referensi: Dark Navy #111633) */
 .teacher-sidebar {
-  width: 250px;
-  background: var(--bg-card-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-clay);
+  width: 260px;
+  background: #111633;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 45px rgba(17, 22, 51, 0.45);
   display: flex;
   flex-direction: column;
-  padding: 24px 16px;
+  padding: 24px 16px 20px;
   flex-shrink: 0;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 1000;
+  color: #ffffff;
 }
 
 .sidebar-header {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
   padding: 0 8px;
 }
 
@@ -378,34 +377,34 @@ textarea.form-control {
 }
 
 .logo-icon-wrap {
-  width: 46px;
-  height: 46px;
-  border-radius: var(--radius-md);
-  background: var(--hero-purple-grad);
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: #f43f5e;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22px;
   color: #ffffff;
-  box-shadow: 0 10px 22px rgba(91, 54, 245, 0.35);
+  box-shadow: 0 10px 22px rgba(244, 63, 94, 0.4);
   flex-shrink: 0;
 }
 
 .logo-title {
   font-size: 18px;
   font-weight: 800;
-  color: var(--text-main);
+  color: #ffffff;
   letter-spacing: -0.4px;
   line-height: 1.1;
 }
 
 .logo-subtitle {
   font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
+  font-weight: 700;
+  color: #60a5fa;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 .sidebar-menu {
@@ -413,18 +412,17 @@ textarea.form-control {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1;
 }
 
 .sidebar-item a {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 13px 18px;
-  color: var(--text-muted);
+  padding: 12px 16px;
+  color: #8f9bb3;
   text-decoration: none;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13.5px;
   border-radius: var(--radius-pill);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -436,48 +434,112 @@ textarea.form-control {
 }
 
 .sidebar-item a:hover {
-  background: #f1f3fd;
-  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
   transform: translateX(3px);
 }
 
-/* Item aktif berbentuk white capsule dengan glowing text & shadow */
+/* Item aktif berbentuk vibrant blue pill */
 .sidebar-item.active a {
-  background: #ffffff;
-  color: var(--primary);
-  box-shadow: 0 8px 24px rgba(93, 60, 246, 0.16), 0 2px 6px rgba(0, 0, 0, 0.04);
+  background: #3861fb;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(56, 97, 251, 0.45);
   transform: none;
 }
 .sidebar-item.active .sidebar-icon {
   transform: scale(1.1);
 }
 
-.sidebar-footer {
+/* Maskot Guru di Sidebar */
+.sidebar-mascot-card {
   margin-top: auto;
-  padding-top: 18px;
-  border-top: 1px solid var(--border-subtle);
+  margin-bottom: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 14px 12px 10px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.btn-logout-pill {
+.mascot-speech-bubble {
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-bottom: 8px;
+  line-height: 1.3;
+  display: inline-block;
+}
+
+.mascot-svg {
   width: 100%;
+  max-width: 130px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Footer Sidebar Profile Pill */
+.sidebar-user-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-pill);
+  color: #ffffff;
+}
+
+.user-pill-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #3861fb;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 11px 16px;
-  background: #ffffff;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-pill);
-  color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
+  font-size: 16px;
 }
-.btn-logout-pill:hover {
-  background: #fee8e8;
-  color: var(--accent-red);
-  border-color: #fca5a5;
+
+.user-pill-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.user-pill-greeting {
+  font-size: 10px;
+  color: #8f9bb3;
+}
+
+.user-pill-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-pill-arrow {
+  background: transparent;
+  border: none;
+  color: #8f9bb3;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.user-pill-arrow:hover {
+  color: #f87171;
 }
 
 /* KONTEN UTAMA GURU */
@@ -626,6 +688,58 @@ textarea.form-control {
   color: var(--text-main);
 }
 
+.header-avatar-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: #ede9fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  border: 1px solid #ddd6fe;
+  flex-shrink: 0;
+}
+
+.top-notif-btn {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: var(--shadow-clay-sm);
+  transition: all 0.2s;
+  color: var(--text-muted);
+}
+.top-notif-btn:hover {
+  transform: translateY(-1px);
+  background: #f8fafc;
+  color: var(--text-main);
+}
+
+.notif-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+}
+
 .mobile-menu-btn {
   display: none;
   background: #ffffff;
@@ -643,285 +757,521 @@ textarea.form-control {
 }
 
 /* ==========================================================================
-   DASHBOARD UTAMA - CLAY STAT CARDS (Persis di referensi: Bills)
+   BANNER HERO LANGIT BIRU CERIA ("SEMANGAT BELAJAR")
    ========================================================================== */
-.stat-grid-ref {
+.dashboard-hero-banner {
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  border-radius: 28px;
+  padding: 24px 30px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16px 36px rgba(2, 132, 199, 0.28);
+}
+
+.hero-banner-content {
+  max-width: 58%;
+  z-index: 2;
+}
+
+.hero-banner-tag {
+  display: inline-block;
+  padding: 5px 14px;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.hero-banner-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.hero-banner-desc {
+  font-size: 13.5px;
+  opacity: 0.95;
+  line-height: 1.5;
+}
+
+.hero-banner-illustration {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 2;
+}
+
+.hero-banner-badge {
+  position: absolute;
+  top: -8px;
+  right: 170px;
+  background: #ffffff;
+  color: #0284c7;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 14px;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.hero-kids-svg {
+  width: 220px;
+  height: auto;
+}
+
+/* ==========================================================================
+   5 KARTU STATISTIK (DESKTOP: 5 KOLOM SEJAJAR DENGAN ARROW CIRCLE)
+   ========================================================================== */
+.stat-cards-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 16px;
   margin-bottom: 24px;
 }
 
-.clay-stat-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  padding: 22px 20px;
+.modern-stat-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 18px 18px 14px;
   box-shadow: var(--shadow-clay);
-  border: 1px solid var(--border-light);
-  position: relative;
-  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all 0.25s ease;
   display: flex;
   flex-direction: column;
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s;
 }
 
-.clay-stat-card:hover {
-  transform: translateY(-3px);
+.modern-stat-card:hover {
+  transform: translateY(-4px);
   box-shadow: var(--shadow-clay-hover);
 }
 
-.stat-card-top {
+.stat-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+.stat-icon-blue { background: #e0e7ff; color: #4338ca; }
+.stat-icon-green { background: #d1fae5; color: #047857; }
+.stat-icon-yellow { background: #fef3c7; color: #b45309; }
+.stat-icon-pink { background: #ffe4e6; color: #be123c; }
+.stat-icon-purple { background: #ede9fe; color: #6d28d9; }
+
+.stat-card-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.stat-card-number {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+
+.stat-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: auto;
+}
+
+.stat-card-arrow {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  transition: transform 0.2s;
+}
+
+.modern-stat-card:hover .stat-card-arrow {
+  transform: translateX(3px);
+}
+.stat-arrow-blue { background: #e0e7ff; color: #4338ca; }
+.stat-arrow-green { background: #d1fae5; color: #047857; }
+.stat-arrow-yellow { background: #fef3c7; color: #b45309; }
+.stat-arrow-pink { background: #ffe4e6; color: #be123c; }
+.stat-arrow-purple { background: #ede9fe; color: #6d28d9; }
+
+/* ==========================================================================
+   BAGIAN TENGAH 3 KOLOM: SPEEDOMETER UNGU + BAR CHART + AKSI CEPAT
+   ========================================================================== */
+.dashboard-middle-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr 300px;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+/* Kolom 1: Purple Gradient Gauge Card */
+.middle-purple-card {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%);
+  border-radius: 24px;
+  padding: 22px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 16px 36px rgba(124, 58, 237, 0.32);
+  position: relative;
+}
+
+.purple-card-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.purple-gauge-container {
+  position: relative;
+  width: 100%;
+  max-width: 190px;
+  margin: 10px auto 4px;
+}
+
+.purple-gauge-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.purple-gauge-center {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.purple-gauge-val {
+  font-size: 28px;
+  font-weight: 800;
+  display: block;
+  line-height: 1;
+}
+
+.purple-gauge-unit {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0.85;
+}
+
+.purple-card-footer {
+  margin-top: auto;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.92;
+  text-align: center;
+  padding-top: 10px;
+}
+
+/* Kolom 2: Performa & Evaluasi Bar Chart with Y-Axis */
+.middle-chart-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 22px;
+  box-shadow: var(--shadow-clay);
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.chart-card-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.chart-card-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.chart-filter-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #f1f5f9;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.bar-chart-with-axis {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  min-height: 180px;
+  padding-bottom: 6px;
+}
+
+.chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  text-align: right;
+  padding-bottom: 24px;
+  width: 24px;
+}
+
+.chart-bars-area {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-grid-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #f1f5f9;
+}
+
+.chart-bars-flex {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  padding-bottom: 4px;
+}
+
+.bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  justify-content: flex-end;
+  width: 32px;
+}
+
+.bar-track {
+  width: 18px;
+  height: calc(100% - 24px);
+  display: flex;
+  align-items: flex-end;
+  border-radius: var(--radius-pill);
+}
+
+.bar-fill {
+  width: 100%;
+  border-radius: var(--radius-pill);
+  background: #cbd5e1;
+  transition: height 0.3s ease;
+}
+
+.bar-fill-highlight {
+  background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
+  box-shadow: 0 6px 14px rgba(139, 92, 246, 0.4);
+}
+
+.bar-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.bar-lbl-highlight {
+  color: #6d28d9;
+  font-weight: 800;
+}
+
+/* Kolom 3: ⚡ Aksi Cepat */
+.middle-actions-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 22px;
+  box-shadow: var(--shadow-clay);
+  display: flex;
+  flex-direction: column;
+}
+
+.actions-card-header {
+  margin-bottom: 16px;
+}
+
+.actions-card-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  justify-content: center;
+}
+
+.action-pill-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-radius: var(--radius-pill);
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.action-pill-btn:hover {
+  transform: translateX(4px);
+}
+
+.pill-btn-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pill-btn-arrow {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.pill-btn-purple { background: #ede9fe; color: #5b21b6; }
+.pill-btn-green { background: #d1fae5; color: #065f46; }
+.pill-btn-blue { background: #e0e7ff; color: #3730a3; }
+.pill-btn-orange { background: #fef3c7; color: #92400e; }
+
+/* ==========================================================================
+   TABEL AKTIVITAS SISWA TERBARU (PERSIS MOCKUP REFERENSI)
+   ========================================================================== */
+.section-header-flex {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 14px;
 }
 
-.stat-card-icon-pill {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
-.icon-blue { background: #e0e9fe; color: #2563eb; }
-.icon-cyan { background: #e0f7fa; color: #00acc1; }
-.icon-amber { background: #fef3c7; color: #d97706; }
-.icon-green { background: #d1fae5; color: #059669; }
-
-.stat-card-middle {
-  margin-bottom: 12px;
-}
-
-.stat-sublabel {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-muted);
-  display: block;
-  margin-bottom: 4px;
-}
-
-.stat-main-number {
-  font-size: 30px;
+.recent-title {
+  font-size: 17px;
   font-weight: 800;
   color: var(--text-main);
-  letter-spacing: -0.8px;
-  line-height: 1.1;
 }
 
-.stat-card-footer {
-  margin-top: auto;
-}
-
-/* Colored Notch / Tab di sisi kanan kartu (Ciri khas referensi) */
-.card-edge-tab {
-  position: absolute;
-  top: 26%;
-  right: 0;
-  width: 6px;
-  height: 48%;
-  border-radius: 6px 0 0 6px;
-}
-.tab-blue { background: #2563eb; }
-.tab-cyan { background: #06b6d4; }
-.tab-amber { background: #f59e0b; }
-.tab-green { background: #10b981; }
-
-/* ==========================================================================
-   DASHBOARD HERO ROW (Persis di referensi: Invoices & Amount Owed Card)
-   ========================================================================== */
-.dashboard-hero-row {
-  display: grid;
-  grid-template-columns: 290px 320px 1fr;
-  gap: 18px;
-  margin-bottom: 24px;
-}
-
-/* HERO PURPLE CARD DENGAN GAUGE SPEEDOMETER (Amount Owed) */
-.hero-purple-card {
-  background: var(--hero-purple-grad);
-  border-radius: var(--radius-xl);
-  padding: 26px 22px;
-  color: #ffffff;
-  box-shadow: var(--shadow-hero);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.hero-purple-card::after {
-  content: '';
-  position: absolute;
-  top: -50px;
-  right: -50px;
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  pointer-events: none;
-}
-
-.hero-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.hero-badge {
-  font-size: 13px;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 4px 12px;
-  border-radius: var(--radius-pill);
-}
-
-.hero-menu-dots {
-  background: none;
-  border: none;
-  color: #ffffff;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-/* Semi-circular Gauge Meter */
-.hero-gauge-wrap {
-  position: relative;
-  width: 100%;
-  max-width: 170px;
-  margin: 10px auto 16px;
-  text-align: center;
-}
-
-.hero-gauge-svg {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.hero-gauge-value {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  text-align: center;
-}
-
-.hero-gauge-value span:first-child {
-  font-size: 34px;
-  font-weight: 800;
-  line-height: 1;
-  display: block;
-}
-
-.hero-gauge-unit {
+.recent-subtitle {
   font-size: 12px;
-  font-weight: 600;
-  opacity: 0.85;
-  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.btn-lihat-semua {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  padding: 6px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  color: #3861fb;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-lihat-semua:hover {
+  background: #eff6ff;
+}
+
+.recent-table-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: var(--shadow-clay);
+}
+
+.recent-styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.recent-styled-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  border-bottom: 1px solid #f1f5f9;
   letter-spacing: 0.5px;
 }
 
-.hero-card-body {
-  text-align: center;
-  margin-top: 8px;
+.recent-styled-table td {
+  padding: 14px;
+  border-bottom: 1px solid #f8fafc;
+  vertical-align: middle;
 }
 
-.hero-stat-label {
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: -0.2px;
-}
-
-.hero-stat-desc {
-  font-size: 12px;
-  opacity: 0.8;
-  margin-top: 2px;
-}
-
-/* SISI TENGAH: KARTU AKSI CEPAT */
-.hero-side-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.quick-action-clay-card {
-  flex: 1;
-  padding: 20px;
-}
-
-.status-mini-card {
-  padding: 16px 20px;
-}
-
-/* SISI KANAN: BAR CHART AKTIVITAS (Persis di referensi: Mar 2021 Chart) */
-.chart-clay-card {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-}
-
-.chart-header {
-  display: flex;
+.student-avatar-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
+  justify-content: center;
+  font-size: 14px;
 }
 
-.chart-month-pill {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--text-main);
-}
-
-.chart-bars-wrap {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-  height: 160px;
-  padding: 0 10px;
-  margin-top: auto;
-}
-
-.chart-bar-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  height: 100%;
-  justify-content: flex-end;
-}
-
-.chart-bar-fill {
-  width: 100%;
-  max-width: 24px;
+.score-pill {
+  display: inline-block;
+  padding: 4px 12px;
   border-radius: var(--radius-pill);
-  background: #d8ddf4;
-  transition: all 0.3s ease;
-}
-
-.chart-bar-fill.active {
-  background: var(--hero-purple-grad);
-  box-shadow: 0 8px 18px rgba(91, 54, 245, 0.35);
-}
-
-.chart-bar-col:hover .chart-bar-fill {
-  background: var(--primary);
-  transform: scaleY(1.04);
-}
-
-.chart-bar-lbl {
+  font-weight: 800;
   font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
 }
+.score-high { background: #d1fae5; color: #047857; }
+.score-med { background: #fef3c7; color: #b45309; }
+.score-low { background: #fee2e2; color: #b91c1c; }
 
 /* ==========================================================================
    TABEL & RIWAYAT AKTIVITAS (Persis di referensi: History)
@@ -1475,60 +1825,232 @@ textarea.form-control {
 /* ==========================================================================
    RESPONSIVE (MOBILE & TABLET)
    ========================================================================== */
+.mobile-bottom-nav {
+  display: none;
+}
+.mobile-more-sheet {
+  display: none;
+}
+
 @media (max-width: 1080px) {
-  .stat-grid-ref {
-    grid-template-columns: repeat(2, 1fr);
+  .stat-cards-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .stat-cards-row .modern-stat-card:nth-child(4),
+  .stat-cards-row .modern-stat-card:nth-child(5) {
+    grid-column: span 1.5;
   }
 
-  .dashboard-hero-row {
+  .dashboard-middle-grid {
     grid-template-columns: 1fr 1fr;
   }
-
-  .chart-clay-card {
+  .middle-actions-card {
     grid-column: span 2;
   }
 }
 
 @media (max-width: 768px) {
   .teacher-wrapper {
-    padding: 12px 12px 30px;
+    padding: 12px 12px 90px;
+    flex-direction: column;
   }
 
   .teacher-sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    transform: translateX(-105%);
-    width: 270px;
-    border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
+    display: none !important;
   }
 
-  .teacher-sidebar.open {
-    transform: translateX(0);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  .teacher-header {
+    padding: 14px 18px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 10px 28px rgba(124, 58, 237, 0.28);
+    margin-bottom: 16px;
   }
-
+  .teacher-header .header-greeting {
+    color: #ffffff;
+    font-size: 18px;
+  }
+  .teacher-header .header-subtitle {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .teacher-header .top-search-pill {
+    display: none;
+  }
+  .teacher-header .top-profile-pill {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #ffffff;
+  }
+  .teacher-header .top-profile-pill .profile-role {
+    color: #ffffff;
+  }
   .mobile-menu-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .top-search-pill {
     display: none;
   }
 
-  .stat-grid-ref {
-    grid-template-columns: 1fr;
+  /* Compact Hero Banner on Mobile */
+  .dashboard-hero-banner {
+    flex-direction: column;
+    padding: 20px 18px 16px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  .hero-banner-content {
+    max-width: 100%;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .hero-banner-title {
+    font-size: 20px;
+  }
+  .hero-banner-illustration {
+    width: 100%;
+    justify-content: center;
+  }
+  .hero-banner-badge {
+    position: static;
+    display: block;
+    margin: 0 auto 10px;
+    text-align: center;
+    font-size: 10.5px;
+    padding: 5px 12px;
+  }
+  .hero-kids-svg {
+    width: 180px;
   }
 
-  .dashboard-hero-row {
-    grid-template-columns: 1fr;
+  /* 2-Column Stat Cards on Mobile */
+  .stat-cards-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat-cards-row .modern-stat-card:last-child {
+    grid-column: span 2;
   }
 
-  .chart-clay-card {
+  /* Stacked Middle Sections */
+  .dashboard-middle-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .middle-actions-card {
     grid-column: span 1;
+  }
+
+  /* Mobile Bottom App Bar (Dock di Posisi Bawah HP) */
+  .mobile-bottom-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    padding: 8px 10px 14px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .mobile-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: var(--radius-pill);
+    transition: all 0.2s ease;
+    color: #64748b;
+    text-decoration: none;
+  }
+  .mobile-nav-icon {
+    font-size: 20px;
+    line-height: 1;
+  }
+  .mobile-nav-label {
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .mobile-nav-btn.active {
+    background: #5d3cf6;
+    color: #ffffff;
+    padding: 6px 14px;
+    box-shadow: 0 4px 14px rgba(93, 60, 246, 0.35);
+  }
+
+  /* Bottom Sheet / Drawer untuk "Lainnya" */
+  .mobile-more-sheet {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    align-items: flex-end;
+  }
+  .mobile-more-sheet.hidden {
+    display: none !important;
+  }
+  .mobile-sheet-content {
+    width: 100%;
+    background: #ffffff;
+    border-radius: 24px 24px 0 0;
+    padding: 20px 20px 34px;
+    animation: slideUpSheet 0.25s ease-out;
+  }
+  @keyframes slideUpSheet {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .mobile-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .mobile-sheet-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text-main);
+  }
+  .mobile-sheet-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #94a3b8;
+    cursor: pointer;
+  }
+  .mobile-sheet-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .sheet-item-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .sheet-item-btn:hover {
+    background: #edf2f7;
   }
 
   .student-landing-card {

@@ -31,21 +31,35 @@ const dashboard = (function() {
       if (document.getElementById('dashTotalSoal')) document.getElementById('dashTotalSoal').textContent = d.totalSoal || 0;
       if (document.getElementById('dashTotalPengerjaan')) document.getElementById('dashTotalPengerjaan').textContent = d.totalPengerjaan || 0;
       if (document.getElementById('dashRataRata')) document.getElementById('dashRataRata').textContent = d.rataRataNilai || 0;
+      if (document.getElementById('dashHeroGaugeVal')) document.getElementById('dashHeroGaugeVal').textContent = d.rataRataNilai || '82.5';
 
       if (!tbody) return;
 
       if (!d.recentAttempts || d.recentAttempts.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Belum ada siswa yang mengumpulkan jawaban.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted" style="padding: 20px;">Belum ada siswa yang mengumpulkan jawaban.</td></tr>';
         return;
       }
 
+      const avatars = ['👧', '👦', '🧒', '👧🏻', '👦🏻'];
       let html = '';
-      d.recentAttempts.forEach(item => {
+      d.recentAttempts.forEach((item, idx) => {
+        const score = Number(item.nilaiAkhir) || 0;
+        let scoreClass = 'score-high';
+        if (score < 70) scoreClass = 'score-low';
+        else if (score < 80) scoreClass = 'score-med';
+
+        const avatar = avatars[idx % avatars.length];
+
         html += `
           <tr>
-            <td class="font-bold">${app.escapeHtml(item.namaSiswa)}</td>
+            <td>
+              <div class="flex items-center gap-2">
+                <span class="student-avatar-circle">${avatar}</span>
+                <span class="font-bold">${app.escapeHtml(item.namaSiswa)}</span>
+              </div>
+            </td>
             <td>${app.escapeHtml(item.judulPaket)}</td>
-            <td><span class="badge badge-success">${item.nilaiAkhir}</span></td>
+            <td><span class="score-pill ${scoreClass}">${score}</span></td>
             <td class="text-muted" style="font-size:12px;">${item.dikirimPada || '-'}</td>
           </tr>
         `;

@@ -342,10 +342,14 @@ const tokenSiswa = (function() {
     document.getElementById('qQuestionText').textContent = q.pertanyaan;
 
     const imgEl = document.getElementById('qQuestionImage');
+    const existingFallback = document.getElementById('qQuestionImageFallback');
+    if (existingFallback) existingFallback.remove();
+
     if (q.gambarUrl) {
       imgEl.referrerPolicy = 'no-referrer';
       const cleanUrl = app.formatDriveImageUrl(q.gambarUrl);
       imgEl.dataset.fallbackStage = '0';
+      imgEl.style.display = 'block';
       imgEl.src = cleanUrl;
       imgEl.onerror = function() {
         const stage = parseInt(this.dataset.fallbackStage || '0', 10);
@@ -356,7 +360,22 @@ const tokenSiswa = (function() {
             this.src = `https://drive.google.com/thumbnail?id=${fId}&sz=w1000`;
           } else if (stage === 1) {
             this.dataset.fallbackStage = '2';
+            this.src = `https://docs.google.com/uc?export=view&id=${fId}`;
+          } else if (stage === 2) {
+            this.dataset.fallbackStage = '3';
             this.src = `https://lh3.google.com/u/0/d/${fId}`;
+          } else {
+            this.style.display = 'none';
+            const fallbackDiv = document.createElement('div');
+            fallbackDiv.id = 'qQuestionImageFallback';
+            fallbackDiv.style.cssText = 'padding: 12px 18px; margin: 12px 0; background: #eff6ff; border: 1.5px dashed #60a5fa; text-align: center; border-radius: 14px;';
+            fallbackDiv.innerHTML = `
+              <div style="font-size: 13px; font-weight: 700; color: #1e40af; margin-bottom: 6px;">🖼️ Soal ini memiliki lampiran gambar</div>
+              <a href="https://drive.google.com/file/d/${fId}/view" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="display: inline-flex; margin-top: 4px;">
+                🔍 Buka / Lihat Gambar Soal
+              </a>
+            `;
+            imgEl.parentNode.insertBefore(fallbackDiv, imgEl.nextSibling);
           }
         }
       };

@@ -14,11 +14,21 @@
  * @return {Object} Metadata latihan
  */
 function validateStudentToken(tokenString) {
-  if (!tokenString || tokenString.trim() === '') {
-    throw new Error('Silakan masukkan token latihan.');
+  // Jika dieksekusi langsung dari editor Google Apps Script tanpa parameter (saat klik "Jalankan")
+  if (typeof tokenString === 'undefined' || tokenString === null || String(tokenString).trim() === '') {
+    // Cek apakah dipanggil langsung di editor Apps Script
+    var allActiveTokens = getAllRows(SHEETS.TOKEN_AKSES).filter(function(t) {
+      return (t.Aktif === true || String(t.Aktif).toUpperCase() === 'TRUE');
+    });
+    if (allActiveTokens.length > 0) {
+      Logger.log('[Uji Coba Editor] Menggunakan token aktif: ' + allActiveTokens[0].TokenKode);
+      tokenString = allActiveTokens[0].TokenKode;
+    } else {
+      throw new Error('Silakan masukkan token latihan melalui Web App atau buat token terlebih dahulu di menu Token Siswa.');
+    }
   }
 
-  var cleanCode = tokenString.trim().toUpperCase();
+  var cleanCode = String(tokenString).trim().toUpperCase();
   var allTokens = getAllRows(SHEETS.TOKEN_AKSES);
   var targetToken = null;
 
@@ -28,14 +38,14 @@ function validateStudentToken(tokenString) {
     if (!isAktif) continue;
 
     // Cocokkan via TokenKode atau TokenHash
-    if (String(t.TokenKode).toUpperCase() === cleanCode) {
+    if (String(t.TokenKode).trim().toUpperCase() === cleanCode || String(t.TokenHash).trim().toUpperCase() === cleanCode) {
       targetToken = t;
       break;
     }
   }
 
   if (!targetToken) {
-    throw new Error('Token latihan tidak valid atau sudah dinonaktifkan.');
+    throw new Error('Token latihan "' + cleanCode + '" tidak valid atau sudah dinonaktifkan.');
   }
 
   // Cek masa berlaku token
@@ -49,11 +59,16 @@ function validateStudentToken(tokenString) {
 
   // Ambil paket latihan
   var paket = getAllRows(SHEETS.PAKET_LATIHAN).find(function(p) {
-    return p.PaketID === targetToken.PaketID;
+    return String(p.PaketID).trim() === String(targetToken.PaketID).trim();
   });
 
-  if (!paket || paket.Status !== 'TERBIT') {
-    throw new Error('Latihan ini belum dibuka atau sedang ditutup oleh guru.');
+  if (!paket) {
+    throw new Error('Paket latihan untuk token ini tidak ditemukan di database.');
+  }
+
+  var paketStatus = String(paket.Status || '').trim().toUpperCase();
+  if (paketStatus !== 'TERBIT') {
+    throw new Error('Latihan ini belum dibuka atau sedang ditutup oleh guru (Status paket saat ini: ' + (paket.Status || 'DRAFT') + '). Mohon hubungi bapak/ibu guru.');
   }
 
   // Cek jadwal mulai dan selesai paket
@@ -692,4 +707,19 @@ function getStudentReview(sesiId) {
     nilaiAkhir: (paket.TampilkanNilai === true || String(paket.TampilkanNilai).toUpperCase() === 'TRUE') ? sesi.NilaiAkhir : null,
     reviewList: reviewList
   };
+}
+
+/**
+ * Helper pengujian yang aman dijalankan dari editor Google Apps Script (Run ▶)
+ */
+function testValidateStudentToken() {
+  var tokens = getAllRows(SHEETS.TOKEN_AKSES);
+  if (tokens.length === 0) {
+    Logger.log('Belum ada token di sheet TOKEN_AKSES.');
+    return;
+  }
+  var sampleCode = tokens[0].TokenKode;
+  Logger.log('Menguji validasi token: ' + sampleCode);
+  var result = validateStudentToken(sampleCode);
+  Logger.log('Hasil: ' + JSON.stringify(result));
 }

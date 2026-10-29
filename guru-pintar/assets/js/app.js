@@ -172,13 +172,23 @@ const app = (function() {
     currentTeacherView = viewName;
     document.getElementById('teacherSidebar')?.classList.remove('open');
 
-    // Update active state sidebar
+    // Update active state sidebar desktop
     const items = document.querySelectorAll('.sidebar-item');
     items.forEach(el => {
       if (el.getAttribute('data-view') === viewName) {
         el.classList.add('active');
       } else {
         el.classList.remove('active');
+      }
+    });
+
+    // Update active state mobile bottom nav
+    const mobileBtns = document.querySelectorAll('.mobile-nav-btn');
+    mobileBtns.forEach(btn => {
+      if (btn.getAttribute('data-view') === viewName) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
       }
     });
 
@@ -211,8 +221,21 @@ const app = (function() {
     else if (viewName === 'pengaturan') loadPengaturanView();
   }
 
+  function toggleMobileMoreSheet() {
+    const sheet = document.getElementById('mobileMoreSheet');
+    if (sheet) {
+      sheet.classList.toggle('hidden');
+    }
+  }
+
   function initTeacherPortal(profile) {
-    document.getElementById('teacherGreeting').textContent = profile.namaGuru || profile.username;
+    const teacherName = profile.namaGuru || profile.username || 'Guru';
+    if (document.getElementById('teacherGreeting')) {
+      document.getElementById('teacherGreeting').textContent = teacherName;
+    }
+    if (document.getElementById('sidebarTeacherName')) {
+      document.getElementById('sidebarTeacherName').textContent = teacherName;
+    }
     document.getElementById('student-container').classList.add('hidden');
     document.getElementById('teacher-container').classList.remove('hidden');
     switchTeacherView('dashboard');
@@ -368,6 +391,7 @@ const app = (function() {
     copyTextToClipboard,
     downloadCsvFile,
     toggleSidebar,
+    toggleMobileMoreSheet,
     switchTeacherView,
     initTeacherPortal,
     showStudentEntryScreen,
