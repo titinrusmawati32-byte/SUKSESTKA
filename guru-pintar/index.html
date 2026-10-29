@@ -433,21 +433,6 @@
         <!-- 7. PENGATURAN VIEW -->
         <div id="view-pengaturan" class="t-view hidden">
           <div class="card" style="max-width: 650px;">
-            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Koneksi Backend Google Apps Script</h3>
-            <p class="text-muted" style="font-size: 13px; margin-bottom: 14px;">
-              Frontend GitHub Pages ini berkomunikasi langsung dengan backend Web App Google Apps Script melalui HTTP POST (CORS Simple Request).
-            </p>
-            <div class="form-group">
-              <label class="form-label">URL Web App Google Apps Script (Deployment URL)</label>
-              <input type="url" id="backendApiUrlInput" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
-            </div>
-            <div class="flex gap-2">
-              <button class="btn btn-primary btn-sm" onclick="app.saveBackendUrlFromView()">Simpan URL</button>
-              <button class="btn btn-secondary btn-sm" onclick="app.testBackendConnection()">Uji Koneksi (Ping)</button>
-            </div>
-          </div>
-
-          <div class="card" style="max-width: 650px; margin-top: 20px;">
             <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Ubah Password Guru</h3>
             <div class="form-group">
               <label class="form-label">Password Lama</label>
@@ -457,6 +442,12 @@
               <label class="form-label">Password Baru</label>
               <input type="password" id="setNewPass" class="form-control" placeholder="Minimal 6 karakter">
             </div>
+            <div class="form-group">
+              <label class="form-label">Ulangi Password Baru</label>
+              <input type="password" id="setConfirmPass" class="form-control" placeholder="Ulangi password baru">
+            </div>
+            <button class="btn btn-primary" onclick="app.handlePasswordChangeSubmit()">Simpan Password Baru</button>
+          </div>
             <div class="form-group">
               <label class="form-label">Ulangi Password Baru</label>
               <input type="password" id="setConfirmPass" class="form-control" placeholder="Ulangi password baru">
@@ -1178,6 +1169,7 @@
   </div>
 
   <!-- Scripts JavaScript (Path Relatif Kompatibel dengan GitHub Pages) -->
+  <script src="./assets/js/config.js"></script>
   <script src="./assets/js/api.js"></script>
   <script src="./assets/js/auth.js"></script>
   <script src="./assets/js/dashboard.js"></script>

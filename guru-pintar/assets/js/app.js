@@ -184,28 +184,7 @@ const app = (function() {
 
   /* --- Pengaturan Akun & Sistem --- */
   function loadPengaturanView() {
-    const inputUrl = document.getElementById('backendApiUrlInput');
-    if (inputUrl) {
-      inputUrl.value = api.getUrl();
-    }
-  }
-
-  function saveBackendUrlFromView() {
-    const inputUrl = document.getElementById('backendApiUrlInput');
-    if (!inputUrl) return;
-    const url = inputUrl.value.trim();
-    api.setUrl(url);
-    showToast('URL Backend berhasil disimpan!', 'success');
-  }
-
-  async function testBackendConnection() {
-    showToast('Menguji koneksi ke backend...', 'info', 2000);
-    try {
-      const res = await api.ping();
-      showToast('Koneksi berhasil! Backend online: ' + (res.message || 'OK'), 'success', 4000);
-    } catch (err) {
-      showToast('Koneksi gagal: ' + err.message, 'error', 5000);
-    }
+    // Tidak menampilkan URL ke UI sesuai PRD
   }
 
   async function handlePasswordChangeSubmit() {
@@ -232,22 +211,6 @@ const app = (function() {
     } catch (err) {
       showToast('Verifikasi gagal: ' + err.message, 'error', 4000);
     }
-  }
-
-  /* --- Modal Konfigurasi URL Backend Cepat --- */
-  function openApiConfigModal() {
-    const input = document.getElementById('modalApiUrlInput');
-    if (input) input.value = api.getUrl();
-    openModal('modalApiConfig');
-  }
-
-  function saveApiConfigFromModal() {
-    const input = document.getElementById('modalApiUrlInput');
-    if (!input) return;
-    const url = input.value.trim();
-    api.setUrl(url);
-    closeModal('modalApiConfig');
-    showToast('URL Backend berhasil disimpan!', 'success');
   }
 
   /* --- Handler Login Guru & Guru Pertama --- */
@@ -338,13 +301,6 @@ const app = (function() {
       tokenSiswa.resumeFromStorage(storedToken, storedName);
       return;
     }
-
-    // 4. Periksa apakah URL backend sudah diset
-    if (!api.getUrl()) {
-      setTimeout(() => {
-        openApiConfigModal();
-      }, 500);
-    }
   }
 
   // Daftarkan listener saat DOM siap
@@ -362,12 +318,8 @@ const app = (function() {
     switchTeacherView,
     initTeacherPortal,
     showStudentEntryScreen,
-    saveBackendUrlFromView,
-    testBackendConnection,
     handlePasswordChangeSubmit,
     runDatabaseSetupVerification,
-    openApiConfigModal,
-    saveApiConfigFromModal,
     openTeacherLoginModal,
     handleTeacherLoginSubmit,
     openFirstTeacherSetupModal,

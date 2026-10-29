@@ -12,14 +12,13 @@ const api = (function() {
 
   // Konfigurasi URL Deployment Web App Google Apps Script
   const CONFIG = {
-    // URL default (dapat dikosongkan dan diisi melalui antarmuka Pengaturan / Modal)
-    DEFAULT_URL: '',
+    DEFAULT_URL: 'https://script.google.com/macros/s/AKfycbz7Mg7Pu4vKi21USdSsvHnt7QYd2tOdNMqr2bkRtcE_Fhp-0OuZYgomtHumxNocuJ2m/exec',
     STORAGE_KEY: 'lms_gas_api_url',
     
     getUrl: function() {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (stored && stored.trim() !== '') {
-        return stored.trim();
+      // Prioritas 1: Ambil dari file config.js (APP_CONFIG.API_URL)
+      if (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.API_URL && APP_CONFIG.API_URL.trim() !== '') {
+        return APP_CONFIG.API_URL.trim();
       }
       return this.DEFAULT_URL;
     },
@@ -60,11 +59,7 @@ const api = (function() {
     const apiUrl = CONFIG.getUrl();
 
     if (!apiUrl) {
-      // Buka modal konfigurasi URL backend jika belum diisi
-      if (typeof app !== 'undefined' && app.openApiConfigModal) {
-        app.openApiConfigModal();
-      }
-      throw new Error('URL Backend Google Apps Script belum dikonfigurasi. Silakan simpan URL Web App terlebih dahulu.');
+      throw new Error('URL Backend Google Apps Script belum dikonfigurasi di assets/js/config.js. Silakan isi API_URL pada file config.js.');
     }
 
     // Ambil session token otomatis dari modul auth jika tidak diberikan
