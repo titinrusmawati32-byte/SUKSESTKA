@@ -10,24 +10,27 @@
 const dashboard = (function() {
   'use strict';
 
-  async function load() {
+  async function load(forceRefresh = false) {
     const tbody = document.getElementById('dashRecentTable');
-    if (tbody) {
-      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Memuat data dashboard...</td></tr>';
+    
+    // Gunakan cache jika ada agar UI langsung tampil seketika (0ms)
+    const hasExistingData = document.getElementById('dashTotalKelas')?.textContent !== '0' && document.getElementById('dashTotalKelas')?.textContent !== '';
+    if (tbody && !hasExistingData && !forceRefresh) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted"><span class="spinner-sm"></span> Memuat ringkasan dashboard...</td></tr>';
     }
 
     try {
-      const res = await api.getTeacherDashboard();
+      const res = await api.getTeacherDashboard(forceRefresh);
       if (!res || !res.success) {
         throw new Error(res.message || 'Gagal memuat dashboard');
       }
 
       const d = res.data;
-      document.getElementById('dashTotalKelas').textContent = d.totalKelas || 0;
-      document.getElementById('dashPaketAktif').textContent = d.totalPaketAktif || 0;
-      document.getElementById('dashTotalSoal').textContent = d.totalSoal || 0;
-      document.getElementById('dashTotalPengerjaan').textContent = d.totalPengerjaan || 0;
-      document.getElementById('dashRataRata').textContent = d.rataRataNilai || 0;
+      if (document.getElementById('dashTotalKelas')) document.getElementById('dashTotalKelas').textContent = d.totalKelas || 0;
+      if (document.getElementById('dashPaketAktif')) document.getElementById('dashPaketAktif').textContent = d.totalPaketAktif || 0;
+      if (document.getElementById('dashTotalSoal')) document.getElementById('dashTotalSoal').textContent = d.totalSoal || 0;
+      if (document.getElementById('dashTotalPengerjaan')) document.getElementById('dashTotalPengerjaan').textContent = d.totalPengerjaan || 0;
+      if (document.getElementById('dashRataRata')) document.getElementById('dashRataRata').textContent = d.rataRataNilai || 0;
 
       if (!tbody) return;
 
@@ -49,14 +52,19 @@ const dashboard = (function() {
       });
       tbody.innerHTML = html;
     } catch (err) {
-      if (tbody) {
+      if (tbody && !hasExistingData) {
         tbody.innerHTML = `<tr><td colspan="4" class="text-danger text-center">Gagal memuat: ${app.escapeHtml(err.message)}</td></tr>`;
       }
       app.showToast('Gagal memuat dashboard: ' + err.message, 'error');
     }
   }
 
+  function refresh() {
+    return load(true);
+  }
+
   return {
-    load
+    load,
+    refresh
   };
 })();

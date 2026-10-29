@@ -128,6 +128,41 @@ const api = (function() {
     }
   }
 
+  /**
+   * Helper pemanggilan API dengan caching terintegrasi
+   */
+  function cachedCall(cacheKey, ttl, tags, action, data = {}, customSessionToken = null, forceRefresh = false) {
+    if (typeof cacheService !== 'undefined') {
+      return cacheService.wrap(cacheKey, ttl, tags, () => call(action, data, customSessionToken), forceRefresh);
+    }
+    return call(action, data, customSessionToken);
+  }
+
+  /**
+   * Invalidate tags setelah mutasi data berhasil
+   */
+  function invalidateTags(tags) {
+    if (typeof cacheService !== 'undefined') {
+      (Array.isArray(tags) ? tags : [tags]).forEach(t => cacheService.invalidateTag(t));
+    }
+  }
+
+  /**
+   * Autosave jawaban siswa dengan mekanisme retry tangguh
+   */
+  async function saveStudentAnswerWithRetry(sesiId, soalId, jawaban, maxRetries = 2) {
+    let attempt = 0;
+    while (attempt <= maxRetries) {
+      try {
+        return await call('saveStudentAnswer', { sesiId, soalId, jawaban });
+      } catch (err) {
+        attempt++;
+        if (attempt > maxRetries) throw err;
+        await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+      }
+    }
+  }
+
   return {
     // Konfigurasi URL
     getUrl: () => CONFIG.getUrl(),
@@ -140,60 +175,137 @@ const api = (function() {
     hasRegisteredTeacher: () => call('hasRegisteredTeacher'),
 
     // Autentikasi Guru
-    createFirstTeacher: (username, password, namaGuru) => call('createFirstTeacher', { username, password, namaGuru }),
+    createFirstTeacher: (username, password, namaGuru) => {
+      invalidateTags(['dashboard']);
+      return call('createFirstTeacher', { username, password, namaGuru });
+    },
     loginTeacher: (username, password) => call('loginTeacher', { username, password }),
     validateSession: (token) => call('validateSession', {}, token),
-    logoutTeacher: (token) => call('logoutTeacher', {}, token),
+    logoutTeacher: (token) => {
+      if (typeof cacheService !== 'undefined') cacheService.clearAll();
+      return call('logoutTeacher', {}, token);
+    },
     changeTeacherPassword: (oldPassword, newPassword) => call('changeTeacherPassword', { oldPassword, newPassword }),
 
-    // Dashboard
-    getTeacherDashboard: () => call('getTeacherDashboard'),
+    // Dashboard Guru (dengan cache singkat & tag invalidasi)
+    getTeacherDashboard: (force = false) =>
+      cachedCall('teacher_dashboard', cacheService ? cacheService.TTL.DASHBOARD : 60, ['dashboard'], 'getTeacherDashboard', {}, null, force),
 
     // Kelas & Siswa
-    getTeacherKelas: () => call('getTeacherKelas'),
-    saveKelas: (kelasData) => call('saveKelas', { kelasData }),
-    archiveKelas: (kelasId) => call('archiveKelas', { kelasId }),
-    getTeacherSiswa: (kelasId) => call('getTeacherSiswa', { kelasId }),
-    saveSiswa: (siswaData) => call('saveSiswa', { siswaData }),
-    deleteSiswa: (siswaId) => call('deleteSiswa', { siswaId }),
+    getTeacherKelas: (force = false) =>
+      cachedCall('teacher_kelas', cacheService ? cacheService.TTL.KELAS_LIST : 300, ['kelas'], 'getTeacherKelas', {}, null, force),
+    saveKelas: async (kelasData) => {
+      const res = await call('saveKelas', { kelasData });
+      invalidateTags(['kelas', 'dashboard']);
+      return res;
+    },
+    archiveKelas: async (kelasId) => {
+      const res = await call('archiveKelas', { kelasId });
+      invalidateTags(['kelas', 'dashboard']);
+      return res;
+    },
+    getTeacherSiswa: (kelasId, force = false) =>
+      cachedCall('teacher_siswa_' + kelasId, cacheService ? cacheService.TTL.SISWA_LIST : 300, ['siswa', 'kelas'], 'getTeacherSiswa', { kelasId }, null, force),
+    saveSiswa: async (siswaData) => {
+      const res = await call('saveSiswa', { siswaData });
+      invalidateTags(['siswa', 'kelas', 'dashboard']);
+      return res;
+    },
+    deleteSiswa: async (siswaId) => {
+      const res = await call('deleteSiswa', { siswaId });
+      invalidateTags(['siswa', 'kelas', 'dashboard']);
+      return res;
+    },
 
     // Bank Soal
-    getBankSoal: (filters) => call('getBankSoal', { filters }),
-    saveSoal: (soalData) => call('saveSoal', { soalData }),
-    duplicateSoal: (soalId) => call('duplicateSoal', { soalId }),
-    archiveSoal: (soalId) => call('archiveSoal', { soalId }),
-    fixImagePermissions: () => call('fixImagePermissions'),
+    getBankSoal: (filters, force = false) =>
+      cachedCall('bank_soal_' + JSON.stringify(filters || {}), cacheService ? cacheService.TTL.BANK_SOAL : 180, ['soal'], 'getBankSoal', { filters }, null, force),
+    saveSoal: async (soalData) => {
+      const res = await call('saveSoal', { soalData });
+      invalidateTags(['soal', 'dashboard']);
+      return res;
+    },
+    duplicateSoal: async (soalId) => {
+      const res = await call('duplicateSoal', { soalId });
+      invalidateTags(['soal', 'dashboard']);
+      return res;
+    },
+    archiveSoal: async (soalId) => {
+      const res = await call('archiveSoal', { soalId });
+      invalidateTags(['soal', 'dashboard']);
+      return res;
+    },
+    fixImagePermissions: () => {
+      invalidateTags(['soal']);
+      return call('fixImagePermissions');
+    },
 
     // Paket Latihan
-    getPaketLatihan: () => call('getPaketLatihan'),
-    getPaketDetail: (paketId) => call('getPaketDetail', { paketId }),
-    savePaketLatihan: (paketData, selectedSoal) => call('savePaketLatihan', { paketData, selectedSoal }),
-    updatePaketStatus: (paketId, status) => call('updatePaketStatus', { paketId, status }),
+    getPaketLatihan: (force = false) =>
+      cachedCall('paket_latihan', cacheService ? cacheService.TTL.PAKET_LIST : 120, ['paket'], 'getPaketLatihan', {}, null, force),
+    getPaketDetail: (paketId, force = false) =>
+      cachedCall('paket_detail_' + paketId, cacheService ? cacheService.TTL.PAKET_DETAIL : 300, ['paket'], 'getPaketDetail', { paketId }, null, force),
+    savePaketLatihan: async (paketData, selectedSoal) => {
+      const res = await call('savePaketLatihan', { paketData, selectedSoal });
+      invalidateTags(['paket', 'dashboard']);
+      return res;
+    },
+    updatePaketStatus: async (paketId, status) => {
+      const res = await call('updatePaketStatus', { paketId, status });
+      invalidateTags(['paket', 'dashboard']);
+      return res;
+    },
 
     // Token Siswa
-    getPaketTokens: (paketId) => call('getPaketTokens', { paketId }),
-    createPaketToken: (tokenData) => call('createPaketToken', { tokenData }),
-    toggleTokenStatus: (tokenId, aktif) => call('toggleTokenStatus', { tokenId, aktif }),
+    getPaketTokens: (paketId, force = false) =>
+      cachedCall('paket_tokens_' + paketId, cacheService ? cacheService.TTL.TOKEN_LIST : 60, ['token', 'paket'], 'getPaketTokens', { paketId }, null, force),
+    createPaketToken: async (tokenData) => {
+      const res = await call('createPaketToken', { tokenData });
+      invalidateTags(['token', 'dashboard']);
+      return res;
+    },
+    toggleTokenStatus: async (tokenId, aktif) => {
+      const res = await call('toggleTokenStatus', { tokenId, aktif });
+      invalidateTags(['token', 'dashboard']);
+      return res;
+    },
 
     // Hasil & Rekap
-    getHasilList: (filters) => call('getHasilList', { filters }),
+    getHasilList: (filters, force = false) =>
+      cachedCall('hasil_list_' + JSON.stringify(filters || {}), cacheService ? cacheService.TTL.HASIL_LIST : 60, ['hasil'], 'getHasilList', { filters }, null, force),
     getHasilDetail: (sesiId) => call('getHasilDetail', { sesiId }),
-    updateJawabanManual: (jawabanId, skorBaru, benarBaru) => call('updateJawabanManual', { jawabanId, skorBaru, benarBaru }),
+    updateJawabanManual: async (jawabanId, skorBaru, benarBaru) => {
+      const res = await call('updateJawabanManual', { jawabanId, skorBaru, benarBaru });
+      invalidateTags(['hasil', 'dashboard']);
+      return res;
+    },
     exportHasilCsv: (paketId, kelasId) => call('exportHasilCsv', { paketId, kelasId }),
 
-    // Siswa Pengerjaan
+    // Siswa Pengerjaan (Validasi dan Penilaian Selalu Otoritatif ke Backend)
     validateStudentToken: (tokenString) => call('validateStudentToken', { tokenString }),
     startOrResumeSession: (tokenString, studentData) => call('startOrResumeSession', { tokenString, studentData }),
-    saveStudentAnswer: (sesiId, soalId, jawaban) => call('saveStudentAnswer', { sesiId, soalId, jawaban }),
-    submitStudentQuiz: (sesiId) => call('submitStudentQuiz', { sesiId }),
-    getStudentReview: (sesiId) => call('getStudentReview', { sesiId }),
+    saveStudentAnswer: (sesiId, soalId, jawaban) => saveStudentAnswerWithRetry(sesiId, soalId, jawaban),
+    submitStudentQuiz: (sesiId) => {
+      invalidateTags(['dashboard', 'hasil']);
+      return call('submitStudentQuiz', { sesiId });
+    },
+    getStudentReview: (sesiId) =>
+      cachedCall('student_review_' + sesiId, 600, ['review'], 'getStudentReview', { sesiId }),
 
     // Template & Impor CSV
     getTemplateSoalCsv: () => call('getTemplateSoalCsv'),
     getTemplateSiswaCsv: () => call('getTemplateSiswaCsv'),
     previewImportSoal: (csvContent) => call('previewImportSoal', { csvContent }),
-    commitImportSoal: (validRows) => call('commitImportSoal', { validRows }),
+    commitImportSoal: async (validRows) => {
+      const res = await call('commitImportSoal', { validRows });
+      invalidateTags(['soal', 'dashboard']);
+      return res;
+    },
     previewImportSiswa: (kelasId, csvContent) => call('previewImportSiswa', { kelasId, csvContent }),
-    commitImportSiswa: (kelasId, validRows) => call('commitImportSiswa', { kelasId, validRows })
+    commitImportSiswa: async (kelasId, validRows) => {
+      const res = await call('commitImportSiswa', { kelasId, validRows });
+      invalidateTags(['siswa', 'kelas', 'dashboard']);
+      return res;
+    }
   };
 })();

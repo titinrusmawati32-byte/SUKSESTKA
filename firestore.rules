@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Koleksi Cache Publik (Metadata paket latihan tanpa kunci jawaban)
+    // Hanya boleh dibaca, tidak boleh ditulis sembarangan dari browser client
+    match /public_cache/{docId} {
+      allow read: if true;
+      allow write: if false; // Hanya diisi melalui backend tepercaya
+    }
+
+    // 2. Koleksi Cache Referensi Guru (Dibatasi untuk sesi terautentikasi)
+    match /teacher_cache/{docId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // 3. Blokir seluruh koleksi lain secara default (Prinsip Least Privilege)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
