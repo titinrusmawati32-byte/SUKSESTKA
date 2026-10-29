@@ -16,7 +16,11 @@ const api = (function() {
     STORAGE_KEY: 'lms_gas_api_url',
     
     getUrl: function() {
-      // Prioritas 1: Ambil dari file config.js (APP_CONFIG.API_URL)
+      // Prioritas 1: Jika di Vercel, gunakan proxy internal Vercel untuk mengatasi CORS browser
+      if (typeof window !== 'undefined' && window.location.hostname.endsWith('.vercel.app')) {
+        return '/api/proxy';
+      }
+      // Prioritas 2: Ambil dari file config.js (APP_CONFIG.API_URL)
       if (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.API_URL && APP_CONFIG.API_URL.trim() !== '') {
         return APP_CONFIG.API_URL.trim();
       }
@@ -87,7 +91,7 @@ const api = (function() {
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'text/plain;charset=utf-8'
+          'Content-Type': 'text/plain'
         },
         body: JSON.stringify(payload),
         redirect: 'follow'
